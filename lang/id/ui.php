@@ -1,0 +1,86 @@
+<?php
+
+return [
+    'nav' => ['home' => 'Beranda', 'product' => 'Produk', 'article' => 'Artikel', 'about' => 'Tentang Kami', 'contact' => 'Hubungi Kami'],
+    'common' => [
+        'view_products' => 'Lihat Produk', 'get_offer' => 'Dapatkan Penawaran', 'learn_more' => 'Pelajari Lebih Lanjut',
+        'read_more' => 'Baca Selengkapnya', 'chat_wa' => 'Chat via WhatsApp', 'back_products' => 'Kembali ke Produk',
+        'back_articles' => 'Kembali ke Artikel', 'specification' => 'Spesifikasi', 'get_offer_wa' => 'Dapatkan Penawaran via WhatsApp',
+        'send' => 'Kirim Pesan',
+    ],
+    'footer' => [
+        'tagline' => 'Komoditas Indonesia. Koneksi Global.', 'tagline2' => 'Mitra Terpercaya, Dampak Global.',
+        'pages' => 'Halaman', 'commodities' => 'Komoditas', 'contact' => 'Kontak', 'rights' => 'Seluruh hak cipta dilindungi.',
+    ],
+    'home' => [
+        'eyebrow' => 'PT Sazara Global Trade · Medan, Indonesia',
+        'title1' => 'Komoditas Indonesia.', 'title2' => 'Koneksi Global.',
+        'lead' => 'Tumbuh di Indonesia. Digerakkan oleh Peluang Global. Kami melakukan sourcing, perdagangan, dan fasilitasi pasokan komoditas Indonesia untuk pasar domestik maupun internasional.',
+        'flow_title' => 'Alur Bisnis Kami',
+        'flow_sub' => 'Sazara beroperasi di seluruh rantai pasok komoditas, menghubungkan sumber produksi dengan pasar.',
+        'flow' => [
+            ['Sumber', 'Produsen, petani, pengolah, dan pemasok Indonesia'],
+            ['Sazara', 'Sourcing • Perdagangan • Koordinasi Komersial'],
+            ['Ekspor', 'Dokumentasi • Koordinasi Kualitas • Logistik'],
+            ['Pembeli Global', 'Importir • Distributor • Wholesaler • Pengguna Akhir'],
+        ],
+        'featured_title' => 'Komoditas Unggulan',
+        'why_title' => 'Mengapa Bermitra dengan Kami?',
+        'why' => [
+            ['Solusi Fleksibel', 'Kami menyesuaikan pengaturan sourcing dan komersial sesuai kebutuhan pembeli.'],
+            ['Koordinasi Profesional', 'Kami mengoordinasikan aspek komersial, dokumentasi, logistik, dan pengiriman dalam setiap transaksi.'],
+            ['Fokus Kualitas', 'Kami memahami bahwa kualitas yang konsisten adalah fondasi perdagangan internasional yang sukses.'],
+            ['Hubungan Jangka Panjang', 'Kami membangun hubungan yang berkelanjutan, bukan transaksi sekali jalan.'],
+        ],
+        'cta_title' => 'Mari Bangun Peluang Global Bersama.',
+        'cta_text' => 'Kami siap menjajaki peluang dengan importir, distributor, wholesaler, produsen, dan mitra bisnis yang mencari sourcing komoditas Indonesia yang andal.',
+    ],
+    'products' => [
+        'title' => 'Komoditas Kami',
+        'sub' => 'Portofolio beragam komoditas Indonesia, dipasok sesuai permintaan pasar dan spesifikasi pembeli.',
+    ],
+    'articles' => [
+        'title' => 'Artikel & Wawasan',
+        'sub' => 'Wawasan pasar dan panduan praktis seputar perdagangan komoditas Indonesia.',
+    ],
+    'about' => [
+        'heading' => 'Menghubungkan Komoditas Indonesia dengan Pasar Global',
+        'intro' => [
+            'Berdiri pada 5 Agustus 2026, PT Sazara Global Trade adalah perusahaan perdagangan dan ekspor komoditas Indonesia yang berkedudukan di Medan, Sumatera Utara, Indonesia. Kami berfokus pada sourcing, perdagangan, dan fasilitasi pasokan komoditas Indonesia untuk pasar domestik maupun internasional.',
+            'Portofolio komoditas kami meliputi Palm Broom, Crude Palm Oil (CPO), Coffee, Cloves, Cinnamon, Vanilla, Areca Nut, serta komoditas lain sesuai permintaan pasar dan spesifikasi pembeli.',
+            'Dengan komitmen pada kualitas, keandalan, dan kemitraan jangka panjang, Sazara Global Trade bertujuan menjadi mitra bisnis terpercaya yang menghubungkan beragam sumber daya komoditas Indonesia dengan peluang di pasar global.',
+        ],
+        'story_title' => 'Cerita Kami',
+        'story' => [
+            'Indonesia memiliki sumber daya alam yang melimpah serta ekosistem pertanian dan perkebunan yang kuat.',
+            'PT Sazara Global Trade didirikan untuk menangkap peluang tersebut dengan menciptakan jembatan profesional antara pemasok komoditas Indonesia dan pembeli di pasar internasional.',
+            'Dari sourcing dan koordinasi pemasok hingga negosiasi komersial, dokumentasi, dan koordinasi pengiriman, kami berupaya memberikan pengalaman perdagangan yang mulus bagi mitra bisnis kami.',
+        ],
+        'ambition' => 'Ambisi kami sederhana:',
+        'tagline' => 'Tumbuh di Indonesia. Digerakkan oleh Peluang Global.',
+        'vision_title' => 'Visi Kami',
+        'vision' => 'Menjadi perusahaan perdagangan komoditas Indonesia yang terpercaya, yang menghubungkan sumber daya Indonesia dengan pasar global.',
+        'mission_title' => 'Misi Kami',
+        'mission' => 'Membuat komoditas Indonesia lebih mudah diakses oleh pembeli global melalui kemitraan perdagangan yang andal dan profesional.',
+        'values_title' => 'Nilai-Nilai Kami',
+        'values' => [
+            ['Kualitas', 'Menghadirkan komoditas yang memenuhi spesifikasi dan persyaratan pembeli.'],
+            ['Keandalan', 'Membangun jaringan sourcing dan pasokan yang dapat diandalkan di seluruh Indonesia.'],
+            ['Konektivitas Global', 'Memperluas akses komoditas Indonesia ke pasar internasional.'],
+            ['Profesionalisme', 'Menjalankan bisnis dengan integritas, transparansi, akuntabilitas, dan profesionalisme.'],
+            ['Kemitraan', 'Membangun hubungan yang berkelanjutan dan saling menguntungkan dengan pembeli, pemasok, dan mitra bisnis.'],
+        ],
+        'team_title' => 'Tim Kami',
+        'team' => [
+            ['Salim', 'Presiden Direktur', 'Memimpin arah strategis perusahaan, pengembangan bisnis, ekspansi pasar, dan keseluruhan operasional.', 'salim.jpg'],
+            ['Afriansyah', 'Direktur', 'Mendukung eksekusi bisnis, manajemen operasional, sourcing, dan koordinasi rantai pasok.', 'afriansyah.jpg'],
+            ['Zakki', 'Komisaris', 'Memberikan pengawasan strategis serta mendukung arah jangka panjang dan tata kelola perusahaan.', 'zakki.jpg'],
+        ],
+    ],
+    'contact' => [
+        'title' => 'Mari Bangun Peluang Global Bersama.',
+        'sub' => 'Kami siap menjajaki peluang dengan importir, distributor, wholesaler, produsen, dan mitra bisnis yang mencari sourcing komoditas Indonesia yang andal.',
+        'name' => 'Nama', 'email' => 'Email', 'company' => 'Perusahaan', 'message' => 'Pesan',
+        'success' => 'Terima kasih atas pesan Anda. Tim kami akan segera menghubungi Anda.',
+    ],
+];
