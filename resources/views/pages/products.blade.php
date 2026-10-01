@@ -1,9 +1,16 @@
 @extends('layouts.app')
-@section('title', __('ui.products.title') . ' — Sazara Global')
+
+@php
+    use App\Models\PageSection;
+    $pageTitle = PageSection::get('products', 'header', 'title', __('ui.products.title'));
+    $pageSub   = PageSection::get('products', 'header', 'subtitle', __('ui.products.sub'));
+@endphp
+
+@section('title', $pageTitle . ' — Sazara Global')
 @section('content')
 <section class="section section-alt">
     <div class="container">
-        <div class="section-head"><h2>{{ __('ui.products.title') }}</h2><div class="bar"></div><p>{{ __('ui.products.sub') }}</p></div>
+        <div class="section-head"><h2>{{ $pageTitle }}</h2><div class="bar"></div><p>{{ $pageSub }}</p></div>
         <div class="grid-3">
             @foreach ($products as $product)
                 <article class="card">

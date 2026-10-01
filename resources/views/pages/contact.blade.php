@@ -1,23 +1,33 @@
 @extends('layouts.app')
+
+@php
+    use App\Models\PageSection;
+    $contactTitle   = PageSection::get('contact', 'header', 'title', __('ui.contact.title'));
+    $contactSub     = PageSection::get('contact', 'header', 'subtitle', __('ui.contact.sub'));
+    $contactAddress = PageSection::get('contact', 'info', 'address', 'Medan, North Sumatra, Indonesia');
+    $contactEmail   = PageSection::get('contact', 'info', 'email', 'contact@sazaraglobal.com');
+    $contactWebsite = PageSection::get('contact', 'info', 'website', 'www.sazaraglobal.com');
+@endphp
+
 @section('title', __('ui.nav.contact') . ' — Sazara Global')
 @section('content')
 <section class="section section-alt">
     <div class="container">
-        <div class="section-head"><h2>{{ __('ui.contact.title') }}</h2><div class="bar"></div><p>{{ __('ui.contact.sub') }}</p></div>
+        <div class="section-head"><h2>{{ $contactTitle }}</h2><div class="bar"></div><p>{{ $contactSub }}</p></div>
         <div class="contact-grid">
             <div class="info-card contact-info-card">
                 <h3>PT Sazara Global Trade</h3>
                 <div class="contact-item">
                     <span class="contact-icon">📍</span>
-                    <p>Medan, North Sumatra, Indonesia</p>
+                    <p>{{ $contactAddress }}</p>
                 </div>
                 <div class="contact-item">
                     <span class="contact-icon">✉️</span>
-                    <p><a href="mailto:contact@sazaraglobal.com">contact@sazaraglobal.com</a></p>
+                    <p><a href="mailto:{{ $contactEmail }}">{{ $contactEmail }}</a></p>
                 </div>
                 <div class="contact-item">
                     <span class="contact-icon">🌐</span>
-                    <p><a href="https://www.sazaraglobal.com" target="_blank" rel="noopener">www.sazaraglobal.com</a></p>
+                    <p><a href="{{ str_starts_with($contactWebsite, 'http') ? $contactWebsite : 'https://' . $contactWebsite }}" target="_blank" rel="noopener">{{ $contactWebsite }}</a></p>
                 </div>
                 <div class="contact-cta-wrap">
                     <a class="btn btn-secondary" data-wa="default" href="#">{{ __('ui.common.chat_wa') }}</a>
