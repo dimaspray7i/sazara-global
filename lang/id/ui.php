@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'nav' => ['home' => 'Beranda', 'product' => 'Produk', 'article' => 'Artikel', 'about' => 'Tentang Kami', 'contact' => 'Hubungi Kami'],
+    'nav' => ['home' => 'Beranda', 'product' => 'Produk', 'article' => 'Artikel', 'about' => 'Tentang Kami', 'contact' => 'Hubungi Kami', 'gallery' => 'Galeri'],
     'common' => [
         'view_products' => 'Lihat Produk', 'get_offer' => 'Dapatkan Penawaran', 'learn_more' => 'Pelajari Lebih Lanjut',
         'read_more' => 'Baca Selengkapnya', 'chat_wa' => 'Chat via WhatsApp', 'back_products' => 'Kembali ke Produk',
@@ -11,6 +11,7 @@ return [
     'footer' => [
         'tagline' => 'Komoditas Indonesia. Koneksi Global.', 'tagline2' => 'Mitra Terpercaya, Dampak Global.',
         'pages' => 'Halaman', 'commodities' => 'Komoditas', 'contact' => 'Kontak', 'rights' => 'Seluruh hak cipta dilindungi.',
+        'gallery' => 'Galeri',
     ],
     'home' => [
         'eyebrow' => 'PT Sazara Global Trade · Medan, Indonesia',
@@ -38,10 +39,52 @@ return [
     'products' => [
         'title' => 'Komoditas Kami',
         'sub' => 'Portofolio beragam komoditas Indonesia, dipasok sesuai permintaan pasar dan spesifikasi pembeli.',
+        'seo_title' => 'Sazara Global | Komoditas Ekspor Indonesia',
+        'seo_desc' => 'Jelajahi ragam komoditas Indonesia unggulan Sazara Global: Palm Broom, CPO, Kopi, Cengkeh, Kayu Manis, Vanili, dan lainnya.',
     ],
     'articles' => [
         'title' => 'Artikel & Wawasan',
         'sub' => 'Wawasan pasar dan panduan praktis seputar perdagangan komoditas Indonesia.',
+        'seo_title' => 'Sazara Global | Artikel & Wawasan Pasar',
+        'seo_desc' => 'Baca wawasan dan panduan perdagangan komoditas Indonesia, ekspor, dan peluang pasar internasional bersama Sazara Global.',
+    ],
+    'gallery' => [
+        'title' => 'Galeri',
+        'sub' => 'Tampilan visual komoditas, operasional, dan kegiatan perdagangan global kami.',
+        'all' => 'Semua',
+        'commodities' => 'Komoditas',
+        'insights' => 'Operasional',
+        'company' => 'Perusahaan',
+        'system' => 'Sistem',
+        'empty' => 'Belum ada foto tersedia di kategori ini.',
+        'lightbox_close' => 'Tutup',
+        'prev' => 'Sebelumnya',
+        'next' => 'Berikutnya',
+        'seo_title' => 'Sazara Global | Galeri',
+        'seo_desc' => 'Jelajahi galeri komoditas Sazara Global — Palm Broom, CPO, Kopi, Cengkeh, Kayu Manis, Vanili, dan lebih banyak lagi dari Indonesia.',
+    ],
+    'search' => [
+        'placeholder' => 'Cari produk, artikel, galeri...',
+        'title' => 'Hasil Pencarian',
+        'results_for' => 'Hasil untuk',
+        'no_results' => 'Tidak ditemukan hasil untuk',
+        'try_another' => 'Coba kata kunci lain atau telusuri bagian website kami.',
+        'type_product' => 'Produk',
+        'type_article' => 'Artikel',
+        'type_page'    => 'Halaman',
+        'type_gallery' => 'Galeri',
+        'view_all' => 'Lihat semua hasil',
+        'seo_title' => 'Pencarian — Sazara Global',
+        'seo_desc' => 'Cari produk, artikel, dan konten di Sazara Global.',
+    ],
+    'seo' => [
+        'site_name' => 'Sazara Global',
+        'home_title' => 'Sazara Global | Mitra Ekspor Komoditas Indonesia',
+        'home_desc'  => 'PT Sazara Global Trade — Menghubungkan komoditas Indonesia dengan pasar global. Palm Broom, CPO, Kopi, Cengkeh, Kayu Manis, Vanili, dan lainnya.',
+        'about_title' => 'Tentang Kami — Sazara Global',
+        'about_desc'  => 'Pelajari lebih lanjut tentang PT Sazara Global Trade, perusahaan perdagangan dan ekspor komoditas Indonesia asal Medan, Sumatera Utara.',
+        'contact_title' => 'Hubungi Kami — Sazara Global',
+        'contact_desc'  => 'Hubungi Sazara Global untuk sourcing komoditas, pertanyaan ekspor, dan peluang kemitraan bisnis.',
     ],
     'about' => [
         'heading' => 'Menghubungkan Komoditas Indonesia dengan Pasar Global',

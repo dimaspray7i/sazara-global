@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'nav' => ['home' => 'Home', 'product' => 'Product', 'article' => 'Article', 'about' => 'About Us', 'contact' => 'Contact Us'],
+    'nav' => ['home' => 'Home', 'product' => 'Product', 'article' => 'Article', 'about' => 'About Us', 'contact' => 'Contact Us', 'gallery' => 'Gallery'],
     'common' => [
         'view_products' => 'View Products', 'get_offer' => 'Get Offer', 'learn_more' => 'Learn More',
         'read_more' => 'Read More', 'chat_wa' => 'Chat on WhatsApp', 'back_products' => 'Back to Products',
@@ -11,6 +11,7 @@ return [
     'footer' => [
         'tagline' => 'Indonesian Commodities. Global Connections.', 'tagline2' => 'Trusted Partner, Global Impact.',
         'pages' => 'Pages', 'commodities' => 'Commodities', 'contact' => 'Contact', 'rights' => 'All rights reserved.',
+        'gallery' => 'Gallery',
     ],
     'home' => [
         'eyebrow' => 'PT Sazara Global Trade · Medan, Indonesia',
@@ -38,10 +39,52 @@ return [
     'products' => [
         'title' => 'Our Commodities',
         'sub' => 'A diverse portfolio of Indonesian commodities, supplied according to market demand and buyer specifications.',
+        'seo_title' => 'Sazara Global | Indonesian Export Commodities',
+        'seo_desc' => 'Explore Sazara Global\'s range of premium Indonesian commodities: Palm Broom, CPO, Coffee, Clove, Cinnamon, Vanilla, and more.',
     ],
     'articles' => [
         'title' => 'Articles & Insights',
         'sub' => 'Market insights and practical guides on Indonesian commodity trade.',
+        'seo_title' => 'Sazara Global | Articles & Market Insights',
+        'seo_desc' => 'Explore insights and guides on Indonesian commodity trading, export, and market opportunities by Sazara Global.',
+    ],
+    'gallery' => [
+        'title' => 'Gallery',
+        'sub' => 'A visual look at our commodities, operations, and global trade activities.',
+        'all' => 'All',
+        'commodities' => 'Commodities',
+        'insights' => 'Operations',
+        'company' => 'Company',
+        'system' => 'System',
+        'empty' => 'No images available in this category yet.',
+        'lightbox_close' => 'Close',
+        'prev' => 'Previous',
+        'next' => 'Next',
+        'seo_title' => 'Sazara Global | Gallery',
+        'seo_desc' => 'Browse the Sazara Global commodity gallery — Palm Broom, CPO, Coffee, Clove, Cinnamon, Vanilla, and more from Indonesia.',
+    ],
+    'search' => [
+        'placeholder' => 'Search products, articles, gallery...',
+        'title' => 'Search Results',
+        'results_for' => 'Results for',
+        'no_results' => 'No results found for',
+        'try_another' => 'Try different keywords or browse our sections.',
+        'type_product' => 'Product',
+        'type_article' => 'Article',
+        'type_page'    => 'Page',
+        'type_gallery' => 'Gallery',
+        'view_all' => 'View all results',
+        'seo_title' => 'Search — Sazara Global',
+        'seo_desc' => 'Search products, articles, and content on Sazara Global.',
+    ],
+    'seo' => [
+        'site_name' => 'Sazara Global',
+        'home_title' => 'Sazara Global | Indonesian Commodity Export Partner',
+        'home_desc'  => 'PT Sazara Global Trade — Connecting Indonesian commodities with global markets. Palm Broom, CPO, Coffee, Clove, Cinnamon, Vanilla, and more.',
+        'about_title' => 'About Us — Sazara Global',
+        'about_desc'  => 'Learn about PT Sazara Global Trade, an Indonesian commodity trading and export company based in Medan, North Sumatra.',
+        'contact_title' => 'Contact Us — Sazara Global',
+        'contact_desc'  => 'Get in touch with Sazara Global for commodity sourcing, export inquiries, and partnership opportunities.',
     ],
     'about' => [
         'heading' => 'Connecting Indonesian Commodities with Global Markets',

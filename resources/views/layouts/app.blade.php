@@ -1,21 +1,111 @@
+@php
+$locale = app()->getLocale();
+$prodUrl = rtrim(env('APP_PRODUCTION_URL','https://sazaraglobal.com'),'/');
+$currentPath = '/' . trim(request()->path(), '/');
+// Strip /en or /id prefix from path for the alternate URL builder
+$basePath = preg_replace('#^/(en|id)(/?)#', '/', $currentPath);
+if ($basePath === '') $basePath = '/';
+$canonicalId = $prodUrl . '/id' . ($basePath === '/' ? '' : $basePath);
+$canonicalEn = $prodUrl . '/en' . ($basePath === '/' ? '' : $basePath);
+$canonicalCurrent = $locale === 'id' ? $canonicalId : $canonicalEn;
+$defaultSeoTitle = __('ui.seo.home_title');
+$defaultSeoDesc  = __('ui.seo.home_desc');
+$ogImage = $prodUrl . '/images/logo.jpg';
+$htmlDir = ($currentLanguage && $currentLanguage->isRtl()) ? 'rtl' : 'ltr';
+@endphp
 <!DOCTYPE html>
-<html lang="{{ app()->getLocale() }}">
+<html lang="{{ $locale }}" dir="{{ $htmlDir }}">
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Sazara Global — Indonesian Commodities. Global Connections.')</title>
-    <meta name="description" content="@yield('meta', 'PT Sazara Global Trade — Indonesian commodity trading & export company headquartered in Medan, North Sumatra. Connecting Indonesian commodities with global markets.')">
-    <link rel="canonical" href="{{ url()->current() }}">
+
+    {{-- SEO: Title --}}
+    <title>@yield('seo_title', $defaultSeoTitle)</title>
+    <meta name="description" content="@yield('seo_desc', $defaultSeoDesc)">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="{{ $canonicalCurrent }}">
+
+    {{-- Hreflang --}}
+    <link rel="alternate" hreflang="id" href="{{ $canonicalId }}">
+    <link rel="alternate" hreflang="en" href="{{ $canonicalEn }}">
+    <link rel="alternate" hreflang="x-default" href="{{ $canonicalEn }}">
+
+    {{-- Favicon --}}
     <link rel="icon" type="image/jpeg" href="{{ asset('images/logo.jpg') }}">
-    <meta property="og:type" content="website">
+
+    {{-- Open Graph --}}
+    <meta property="og:type" content="@yield('og_type', 'website')">
     <meta property="og:site_name" content="PT Sazara Global Trade">
-    <meta property="og:title" content="@yield('title', 'Sazara Global — Indonesian Commodities. Global Connections.')">
-    <meta property="og:description" content="@yield('meta', 'PT Sazara Global Trade — Indonesian commodity trading & export company headquartered in Medan, North Sumatra.')">
-    <meta property="og:url" content="{{ url()->current() }}">
-    <meta property="og:image" content="{{ asset('images/logo.jpg') }}">
+    <meta property="og:locale" content="{{ $locale === 'id' ? 'id_ID' : 'en_US' }}">
+    <meta property="og:locale:alternate" content="{{ $locale === 'id' ? 'en_US' : 'id_ID' }}">
+    <meta property="og:title" content="@yield('seo_title', $defaultSeoTitle)">
+    <meta property="og:description" content="@yield('seo_desc', $defaultSeoDesc)">
+    <meta property="og:url" content="{{ $canonicalCurrent }}">
+    <meta property="og:image" content="@yield('og_image', $ogImage)">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    {{-- Twitter Card --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('seo_title', $defaultSeoTitle)">
+    <meta name="twitter:description" content="@yield('seo_desc', $defaultSeoDesc)">
+    <meta name="twitter:image" content="@yield('og_image', $ogImage)">
+
+    {{-- JSON-LD: Organization + WebSite --}}
+    <script type="application/ld+json">
+    {
+        "@@context": "https://schema.org",
+        "@@graph": [
+            {
+                "@@type": "Organization",
+                "@@id": "{{ $prodUrl }}/#organization",
+                "name": "PT Sazara Global Trade",
+                "alternateName": "Sazara Global",
+                "url": "{{ $prodUrl }}",
+                "logo": {
+                    "@@type": "ImageObject",
+                    "url": "{{ $prodUrl }}/images/logo.jpg",
+                    "width": 1254,
+                    "height": 1254
+                },
+                "address": {
+                    "@@type": "PostalAddress",
+                    "addressLocality": "Medan",
+                    "addressRegion": "North Sumatra",
+                    "addressCountry": "ID"
+                },
+                "contactPoint": {
+                    "@@type": "ContactPoint",
+                    "contactType": "customer support",
+                    "telephone": "+62-812-6040-7208",
+                    "availableLanguage": ["Indonesian", "English"]
+                },
+                "sameAs": ["https://sazaraglobal.com"]
+            },
+            {
+                "@@type": "WebSite",
+                "@@id": "{{ $prodUrl }}/#website",
+                "url": "{{ $prodUrl }}",
+                "name": "Sazara Global",
+                "description": "{{ $defaultSeoDesc }}",
+                "publisher": { "@@id": "{{ $prodUrl }}/#organization" },
+                "potentialAction": {
+                    "@@type": "SearchAction",
+                    "target": { "@@type": "EntryPoint", "urlTemplate": "{{ $prodUrl }}/{{ $locale }}/search?q={search_term_string}" },
+                    "query-input": "required name=search_term_string"
+                }
+            }
+            @yield('schema_extra')
+        ]
+    }
+    </script>
+
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+
     <script>
         (function() {
             var saved = localStorage.getItem('sazara_theme');
@@ -32,32 +122,77 @@
         window.sazaraConfig = {
             waNumber: "{{ $globalWaNumber ?? '6281260407208' }}",
             waDisplay: "{{ $globalWaDisplay ?? '+62 812-6040-7208' }}",
-            waDefault: "{{ addslashes($globalWaDefault ?? 'Hello Sazara Global, I would like to make an inquiry...') }}"
+            waDefault: "{{ addslashes($globalWaDefault ?? 'Hello Sazara Global, I would like to make an inquiry...') }}",
+            locale: "{{ $locale }}",
+            searchUrl: "{{ route('search', ['locale' => $locale]) }}"
         };
     </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
+
 <body>
 <header class="site-header" id="siteHeader">
     <div class="header-inner">
-        <a class="brand-link" href="{{ route('home') }}" aria-label="PT Sazara Global Trade — Home">
+        <a class="brand-link" href="{{ route('home', ['locale' => app()->getLocale()]) }}" aria-label="PT Sazara Global Trade — Home">
             <img class="brand-logo" src="{{ asset('images/logo.jpg') }}" alt="PT Sazara Global Trade Logo" width="1254" height="1254">
         </a>
         <nav class="main-nav" id="mainNav" aria-label="Main Navigation">
             <ul>
-                <li><a class="{{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">{{ __('ui.nav.home') }}</a></li>
-                <li><a class="{{ request()->routeIs('products.*') ? 'active' : '' }}" href="{{ route('products.index') }}">{{ __('ui.nav.product') }}</a></li>
-                <li><a class="{{ request()->routeIs('articles.*') ? 'active' : '' }}" href="{{ route('articles.index') }}">{{ __('ui.nav.article') }}</a></li>
-                <li><a class="{{ request()->routeIs('about') ? 'active' : '' }}" href="{{ route('about') }}">{{ __('ui.nav.about') }}</a></li>
-                <li><a class="{{ request()->routeIs('contact') ? 'active' : '' }}" href="{{ route('contact') }}">{{ __('ui.nav.contact') }}</a></li>
+                <li><a class="{{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home', ['locale' => app()->getLocale()]) }}">{{ __('ui.nav.home') }}</a></li>
+                <li><a class="{{ request()->routeIs('products.*') ? 'active' : '' }}" href="{{ route('products.index', ['locale' => app()->getLocale()]) }}">{{ __('ui.nav.product') }}</a></li>
+                <li><a class="{{ request()->routeIs('articles.*') ? 'active' : '' }}" href="{{ route('articles.index', ['locale' => app()->getLocale()]) }}">{{ __('ui.nav.article') }}</a></li>
+                <li><a class="{{ request()->routeIs('gallery.*') ? 'active' : '' }}" href="{{ route('gallery.index', ['locale' => app()->getLocale()]) }}">{{ __('ui.nav.gallery') }}</a></li>
+                <li><a class="{{ request()->routeIs('about') ? 'active' : '' }}" href="{{ route('about', ['locale' => app()->getLocale()]) }}">{{ __('ui.nav.about') }}</a></li>
+                <li><a class="{{ request()->routeIs('contact') ? 'active' : '' }}" href="{{ route('contact', ['locale' => app()->getLocale()]) }}">{{ __('ui.nav.contact') }}</a></li>
             </ul>
         </nav>
         <div class="header-tools">
-            <div class="lang-switch" aria-label="Language Selector">
-                <a class="{{ app()->getLocale() === 'en' ? 'active' : '' }}" href="{{ route('lang.switch', 'en') }}" aria-label="English">EN</a>
-                <span aria-hidden="true"></span>
-                <a class="{{ app()->getLocale() === 'id' ? 'active' : '' }}" href="{{ route('lang.switch', 'id') }}" aria-label="Bahasa Indonesia">ID</a>
+            {{-- Search trigger --}}
+            <button class="search-trigger" id="searchTrigger" type="button" aria-label="{{ __('ui.search.placeholder') }}" title="{{ __('ui.search.placeholder') }}">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </button>
+
+            {{-- Language Dropdown (Dynamic & Searchable) --}}
+            @php
+                $currentLocale = app()->getLocale();
+                $displayLang = $currentLanguage ?? \App\Models\Language::findByCode($currentLocale) ?? \App\Models\Language::findByCode('en');
+                $langList = $activeLanguages ?? \App\Models\Language::getActive();
+            @endphp
+            <div class="lang-dropdown" id="langDropdown" aria-label="Language Selector">
+                <button class="lang-trigger" id="langTrigger" type="button" aria-expanded="false" aria-haspopup="listbox">
+                    <span class="lang-globe">🌐</span>
+                    <span class="lang-flag">{{ $displayLang?->flag }}</span>
+                    <span class="lang-code">{{ strtoupper($currentLocale) }}</span>
+                    <svg class="lang-caret" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="lang-menu" id="langMenu" role="listbox">
+                    <div class="lang-search-box">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" id="langSearchInput" class="lang-search-input" placeholder="Search language..." autocomplete="off">
+                    </div>
+                    <div class="lang-list" id="langList">
+                        @foreach($langList as $l)
+                            <a class="lang-option{{ $currentLocale === $l->code ? ' active' : '' }}"
+                               href="{{ route('lang.switch', $l->code) }}"
+                               data-name="{{ strtolower($l->name) }}"
+                               data-native="{{ strtolower($l->native_name) }}"
+                               data-code="{{ strtolower($l->code) }}"
+                               role="option" aria-selected="{{ $currentLocale === $l->code ? 'true' : 'false' }}">
+                                <span class="lang-flag">{{ $l->flag }}</span>
+                                <span class="lang-names">
+                                    <strong class="lang-native">{{ $l->native_name }}</strong>
+                                    <small class="lang-en-name">{{ $l->name }}</small>
+                                </span>
+                                @if($currentLocale === $l->code)
+                                    <svg class="lang-check" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                @endif
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
             </div>
+
+
             <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle Dark/Light Mode" title="Toggle theme">
                 <svg class="theme-icon-sun" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="5"></circle>
@@ -83,6 +218,23 @@
     </div>
 </header>
 
+{{-- Search Modal --}}
+<div class="search-overlay" id="searchOverlay" role="dialog" aria-label="{{ __('ui.search.placeholder') }}" aria-modal="true" hidden>
+    <div class="search-modal">
+        <div class="search-modal-header">
+            <form class="search-form" id="searchForm" action="{{ route('search', ['locale' => app()->getLocale()]) }}" method="GET">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" name="q" id="searchInput" class="search-input" placeholder="{{ __('ui.search.placeholder') }}" autocomplete="off" aria-label="{{ __('ui.search.placeholder') }}">
+                <button type="button" class="search-close-btn" id="searchClose" aria-label="Close search">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </form>
+        </div>
+        <div class="search-results" id="searchResults"></div>
+    </div>
+</div>
+
+
 <main id="mainContent">@yield('content')</main>
 
 <footer class="site-footer">
@@ -94,13 +246,15 @@
         <div>
             <h4>{{ __('ui.footer.pages') }}</h4>
             <ul>
-                <li><a href="{{ route('home') }}">{{ __('ui.nav.home') }}</a></li>
-                <li><a href="{{ route('products.index') }}">{{ __('ui.nav.product') }}</a></li>
-                <li><a href="{{ route('articles.index') }}">{{ __('ui.nav.article') }}</a></li>
-                <li><a href="{{ route('about') }}">{{ __('ui.nav.about') }}</a></li>
-                <li><a href="{{ route('contact') }}">{{ __('ui.nav.contact') }}</a></li>
+                <li><a href="{{ route('home', ['locale' => app()->getLocale()]) }}">{{ __('ui.nav.home') }}</a></li>
+                <li><a href="{{ route('products.index', ['locale' => app()->getLocale()]) }}">{{ __('ui.nav.product') }}</a></li>
+                <li><a href="{{ route('articles.index', ['locale' => app()->getLocale()]) }}">{{ __('ui.nav.article') }}</a></li>
+                <li><a href="{{ route('gallery.index', ['locale' => app()->getLocale()]) }}">{{ __('ui.nav.gallery') }}</a></li>
+                <li><a href="{{ route('about', ['locale' => app()->getLocale()]) }}">{{ __('ui.nav.about') }}</a></li>
+                <li><a href="{{ route('contact', ['locale' => app()->getLocale()]) }}">{{ __('ui.nav.contact') }}</a></li>
             </ul>
         </div>
+
         <div>
             <h4>{{ __('ui.footer.commodities') }}</h4>
             <ul><li>Palm Broom</li><li>CPO</li><li>Coffee</li><li>Clove</li><li>Cinnamon</li><li>Vanilla</li></ul>

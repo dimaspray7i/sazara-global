@@ -6,7 +6,46 @@ use Illuminate\Database\Eloquent\Model;
 
 class Media extends Model
 {
-    protected $fillable = ['filename', 'original_name', 'mime_type', 'size', 'path', 'alt'];
+    protected $fillable = [
+        'filename', 'original_name', 'mime_type', 'size', 'path', 'alt',
+        'title', 'title_id', 'caption', 'caption_id', 'category', 'is_public', 'sort_order',
+    ];
+
+    protected $casts = [
+        'is_public'   => 'boolean',
+        'sort_order'  => 'integer',
+    ];
+
+    public function scopePublic($q)
+    {
+        return $q->where('is_public', true);
+    }
+
+    public function scopeCategory($q, ?string $cat)
+    {
+        return filled($cat) ? $q->where('category', $cat) : $q;
+    }
+
+    /** Multilingual field accessor with English fallback */
+    public function tr(string $field): string
+    {
+        $locale = app()->getLocale();
+        if ($locale === 'id') {
+            $column = $field . '_id';
+            if (filled($this->$column)) {
+                return $this->$column;
+            }
+        }
+        $fallback = '';
+        if (filled($this->$field)) {
+            $fallback = $this->$field;
+        } elseif ($field === 'title' || $field === 'alt') {
+            $fallback = ucwords(str_replace(['-', '_', '.jpg', '.png', '.webp'], ' ', $this->original_name));
+        }
+
+        return \App\Services\TranslationService::get('media', $this->id, $field, $fallback, $locale);
+    }
+
 
     /** Full public URL for the image */
     public function url(): string

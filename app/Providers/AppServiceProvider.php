@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\PageSection;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -22,7 +23,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        URL::defaults(['locale' => app()->getLocale()]);
+
         View::composer('*', function ($view) {
+
             $isId = app()->getLocale() === 'id';
             $fallbackMsg = $isId
                 ? 'Halo Sazara Global, saya ingin mengetahui lebih lanjut tentang layanan ekspor komoditas Anda.'
@@ -69,6 +73,10 @@ class AppServiceProvider extends ServiceProvider
                 $address = 'Medan, North Sumatra, Indonesia';
             }
 
+            $currentLocale = app()->getLocale();
+            $activeLanguages = \App\Models\Language::getActive();
+            $currentLang = \App\Models\Language::findByCode($currentLocale) ?? \App\Models\Language::findByCode('en');
+
             $view->with([
                 'globalWaNumber'      => $cleanWa,
                 'globalWaDisplay'     => $displayWa,
@@ -78,7 +86,10 @@ class AppServiceProvider extends ServiceProvider
                 'globalEmail'         => $email,
                 'globalPhone'         => $phone,
                 'globalAddress'       => $address,
+                'activeLanguages'     => $activeLanguages,
+                'currentLanguage'     => $currentLang,
             ]);
         });
     }
 }
+

@@ -9,16 +9,22 @@ class PageSection extends Model
     protected $fillable = ['page', 'section', 'field', 'value', 'media_id'];
 
     /**
-     * Get a single field value for a given page/section/field.
+     * Get a single field value for a given page/section/field with multi-language support.
      * Returns $default if not found.
      */
     public static function get(string $page, string $section, string $field, mixed $default = ''): string
     {
-        return static::where('page', $page)
+        $val = static::where('page', $page)
             ->where('section', $section)
             ->where('field', $field)
-            ->value('value') ?? $default;
+            ->value('value');
+
+        $base = filled($val) ? $val : (string) $default;
+        $contentId = "{$page}.{$section}.{$field}";
+
+        return \App\Services\TranslationService::get('page_section', $contentId, $field, $base);
     }
+
 
     /**
      * Get the media model attached to a given page/section/field.

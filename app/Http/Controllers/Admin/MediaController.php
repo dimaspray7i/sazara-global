@@ -20,8 +20,14 @@ class MediaController extends Controller
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
                 $q->where('original_name', 'like', '%' . $request->search . '%')
+                  ->orWhere('title', 'like', '%' . $request->search . '%')
+                  ->orWhere('title_id', 'like', '%' . $request->search . '%')
                   ->orWhere('alt', 'like', '%' . $request->search . '%');
             });
+        }
+
+        if ($request->filled('category')) {
+            $query->where('category', $request->category);
         }
 
         $media = $query->paginate(24)->withQueryString();
@@ -37,8 +43,14 @@ class MediaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'file'  => ['required', 'file', 'max:' . self::MAX_SIZE_KB, 'mimes:jpg,jpeg,png,webp,svg'],
-            'alt'   => ['nullable', 'string', 'max:255'],
+            'file'        => ['required', 'file', 'max:' . self::MAX_SIZE_KB, 'mimes:jpg,jpeg,png,webp,svg'],
+            'alt'         => ['nullable', 'string', 'max:255'],
+            'title'       => ['nullable', 'string', 'max:255'],
+            'title_id'    => ['nullable', 'string', 'max:255'],
+            'caption'     => ['nullable', 'string'],
+            'caption_id'  => ['nullable', 'string'],
+            'category'    => ['nullable', 'string', 'max:50'],
+            'is_public'   => ['nullable', 'boolean'],
         ]);
 
         $file = $request->file('file');
@@ -61,6 +73,13 @@ class MediaController extends Controller
             'size'          => $file->getSize(),
             'path'          => $path,
             'alt'           => $request->alt ?? '',
+            'title'         => $request->title ?? '',
+            'title_id'      => $request->title_id ?? '',
+            'caption'       => $request->caption ?? '',
+            'caption_id'    => $request->caption_id ?? '',
+            'category'      => $request->category ?? 'commodities',
+            'is_public'     => $request->has('is_public') ? $request->boolean('is_public') : true,
+            'sort_order'    => 0,
         ]);
 
         if ($request->wantsJson() || $request->boolean('json')) {
@@ -73,6 +92,40 @@ class MediaController extends Controller
         }
 
         return back()->with('success', 'Image uploaded successfully.');
+    }
+
+    public function update(Request $request, Media $medium)
+    {
+        $validated = $request->validate([
+            'title'       => ['nullable', 'string', 'max:255'],
+            'title_id'    => ['nullable', 'string', 'max:255'],
+            'caption'     => ['nullable', 'string'],
+            'caption_id'  => ['nullable', 'string'],
+            'category'    => ['nullable', 'string', 'max:50'],
+            'is_public'   => ['nullable'],
+            'sort_order'  => ['nullable', 'integer'],
+        ]);
+
+        $validated['is_public'] = $request->has('is_public') ? $request->boolean('is_public') : false;
+
+        $medium->update($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'media' => $medium]);
+        }
+
+        return back()->with('success', 'Media information updated successfully.');
+    }
+
+    public function toggle(Request $request, Media $medium)
+    {
+        $medium->update(['is_public' => ! $medium->is_public]);
+
+        if ($request->wantsJson()) {
+            return response()->json(['is_public' => $medium->is_public]);
+        }
+
+        return back()->with('success', 'Media visibility toggled.');
     }
 
     public function destroy(Request $request, Media $medium)

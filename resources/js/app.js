@@ -1,5 +1,5 @@
 /* =====================================================
-   SAZARA GLOBAL — Frontend Scripts & Interactions
+   SAZARA GLOBAL â€” Frontend Scripts & Interactions
    Theme Switcher, Transparent Scrolled Navbar,
    Smooth Scroll, Mobile Navigation, WhatsApp & Animations
    ===================================================== */
@@ -302,5 +302,200 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             targets.forEach((el) => el.classList.add('is-visible'));
         }
+    }
+
+    /* ==== 9. Language Dropdown ==== */
+    const langDropdown    = document.getElementById('langDropdown');
+    const langTrigger     = document.getElementById('langTrigger');
+    const langSearchInput = document.getElementById('langSearchInput');
+    const langList        = document.getElementById('langList');
+
+    const closeLangDropdown = () => {
+        if (!langDropdown) return;
+        langDropdown.classList.remove('open');
+        if (langTrigger) langTrigger.setAttribute('aria-expanded', 'false');
+        if (langSearchInput) {
+            langSearchInput.value = '';
+            filterLanguages('');
+        }
+    };
+
+    const filterLanguages = (query) => {
+        if (!langList) return;
+        const q = (query || '').toLowerCase().trim();
+        const items = langList.querySelectorAll('.lang-option');
+        items.forEach((item) => {
+            const name   = item.dataset.name || '';
+            const native = item.dataset.native || '';
+            const code   = item.dataset.code || '';
+            if (!q || name.includes(q) || native.includes(q) || code.includes(q)) {
+                item.removeAttribute('hidden');
+            } else {
+                item.setAttribute('hidden', '');
+            }
+        });
+    };
+
+    if (langSearchInput) {
+        langSearchInput.addEventListener('input', function(e) {
+            filterLanguages(e.target.value);
+        });
+    }
+
+    if (langTrigger) {
+        langTrigger.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (langDropdown.classList.contains('open')) {
+                closeLangDropdown();
+            } else {
+                langDropdown.classList.add('open');
+                langTrigger.setAttribute('aria-expanded', 'true');
+                setTimeout(() => langSearchInput?.focus(), 100);
+            }
+        });
+    }
+
+    document.addEventListener('click', function(e) {
+        if (langDropdown && !langDropdown.contains(e.target)) closeLangDropdown();
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && langDropdown?.classList.contains('open')) closeLangDropdown();
+    });
+
+
+    /* ==== 10. Search Modal ==== */
+    const searchOverlay = document.getElementById('searchOverlay');
+    const searchTrigger = document.getElementById('searchTrigger');
+    const searchClose   = document.getElementById('searchClose');
+    const searchInput   = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+
+    function openSearch() {
+        if (!searchOverlay) return;
+        searchOverlay.removeAttribute('hidden');
+        if (searchInput) searchInput.focus();
+        document.body.style.overflow = 'hidden';
+    }
+    function closeSearch() {
+        if (!searchOverlay) return;
+        searchOverlay.setAttribute('hidden', '');
+        document.body.style.overflow = '';
+    }
+
+    if (searchTrigger) searchTrigger.addEventListener('click', openSearch);
+    if (searchClose)   searchClose.addEventListener('click', closeSearch);
+    if (searchOverlay) {
+        searchOverlay.addEventListener('click', function(e) {
+            if (e.target === searchOverlay) closeSearch();
+        });
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && searchOverlay && !searchOverlay.hasAttribute('hidden')) closeSearch();
+        if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+            e.preventDefault();
+            if (searchOverlay && searchOverlay.hasAttribute('hidden')) openSearch(); else closeSearch();
+        }
+    });
+
+    var searchDebounce;
+    var ajaxSearchUrl = (window.sazaraConfig && window.sazaraConfig.searchUrl) ? window.sazaraConfig.searchUrl : '/en/search';
+
+    function doSearch(q) {
+        if (!searchResults) return;
+        if (!q || q.length < 2) { searchResults.innerHTML = ''; return; }
+        try {
+            var url = new URL(ajaxSearchUrl, window.location.origin);
+            url.searchParams.set('q', q);
+            url.searchParams.set('json', '1');
+            fetch(url.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(function(res) { return res.ok ? res.json() : null; })
+                .then(function(data) {
+                    if (!data) return;
+                    if (!data.results || data.results.length === 0) {
+                        searchResults.innerHTML = '<div class="search-result-empty">' + (data.no_results || 'No results found.') + '</div>';
+                        return;
+                    }
+                    var html = data.results.map(function(r) {
+                        var thumb = r.thumb ? '<img class="search-result-thumb" src="' + r.thumb + '" alt="' + r.title + '" loading="lazy">' : '<div class="search-result-thumb"></div>';
+                        return '<a class="search-result-item" href="' + r.url + '">' + thumb +
+                            '<div class="search-result-info"><div class="search-result-title">' + r.title + '</div>' +
+                            '<div class="search-result-desc">' + (r.excerpt || '') + '</div></div>' +
+                            '<span class="search-result-badge">' + (r.type_label || r.type) + '</span></a>';
+                    }).join('');
+                    var viewAllHref = new URL(ajaxSearchUrl, window.location.origin);
+                    viewAllHref.searchParams.set('q', q);
+                    searchResults.innerHTML = html + '<a class="search-view-all" href="' + viewAllHref.toString() + '">' + (data.view_all || 'View all results') + ' &rarr;</a>';
+                })
+                .catch(function() {});
+        } catch(err) {}
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchDebounce);
+            searchDebounce = setTimeout(function() { doSearch(searchInput.value.trim()); }, 280);
+        });
+    }
+
+    /* ==== 11. Lightbox ==== */
+    var lightboxOverlay = document.getElementById('lightboxOverlay');
+    var lightboxImg     = document.getElementById('lightboxImg');
+    var lightboxTitle   = document.getElementById('lightboxTitle');
+    var lightboxCaption = document.getElementById('lightboxCaption');
+    var lightboxClose   = document.getElementById('lightboxClose');
+    var lightboxPrev    = document.getElementById('lightboxPrev');
+    var lightboxNext    = document.getElementById('lightboxNext');
+    var lightboxCounter = document.getElementById('lightboxCounter');
+
+    if (lightboxOverlay) {
+        var galleryItems = [];
+        var currentIdx = 0;
+
+        function buildGallery() {
+            galleryItems = Array.from(document.querySelectorAll('.gallery-card[data-src]')).map(function(el) {
+                return { src: el.dataset.src, title: el.dataset.title || '', caption: el.dataset.caption || '' };
+            });
+        }
+
+        function showLightbox(idx) {
+            if (galleryItems.length === 0) return;
+            currentIdx = ((idx % galleryItems.length) + galleryItems.length) % galleryItems.length;
+            var item = galleryItems[currentIdx];
+            if (lightboxImg) { lightboxImg.src = item.src; lightboxImg.alt = item.title; }
+            if (lightboxTitle)   lightboxTitle.textContent   = item.title;
+            if (lightboxCaption) lightboxCaption.textContent = item.caption;
+            if (lightboxCounter) lightboxCounter.textContent = (currentIdx + 1) + ' / ' + galleryItems.length;
+            lightboxOverlay.removeAttribute('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            lightboxOverlay.setAttribute('hidden', '');
+            document.body.style.overflow = '';
+            if (lightboxImg) lightboxImg.src = '';
+        }
+
+        document.addEventListener('click', function(e) {
+            var card = e.target.closest('.gallery-card[data-src]');
+            if (card) {
+                buildGallery();
+                var allCards = Array.from(document.querySelectorAll('.gallery-card[data-src]'));
+                showLightbox(allCards.indexOf(card));
+            }
+        });
+
+        if (lightboxClose)   lightboxClose.addEventListener('click', closeLightbox);
+        if (lightboxOverlay) lightboxOverlay.addEventListener('click', function(e) { if (e.target === lightboxOverlay) closeLightbox(); });
+        if (lightboxPrev)    lightboxPrev.addEventListener('click', function() { showLightbox(currentIdx - 1); });
+        if (lightboxNext)    lightboxNext.addEventListener('click', function() { showLightbox(currentIdx + 1); });
+
+        document.addEventListener('keydown', function(e) {
+            if (lightboxOverlay.hasAttribute('hidden')) return;
+            if (e.key === 'Escape')     closeLightbox();
+            if (e.key === 'ArrowLeft')  showLightbox(currentIdx - 1);
+            if (e.key === 'ArrowRight') showLightbox(currentIdx + 1);
+        });
     }
 });

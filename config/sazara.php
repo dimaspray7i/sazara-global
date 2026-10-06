@@ -22,4 +22,13 @@ return [
     'phone'   => env('SITE_PHONE', '+62 812-6040-7208'),
     'address' => env('SITE_ADDRESS', 'Medan, North Sumatra, Indonesia'),
     'website' => env('SITE_WEBSITE', 'www.sazaraglobal.com'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Dynamic Multilingual System Settings
+    |--------------------------------------------------------------------------
+    */
+    'auto_translate'       => env('AUTO_TRANSLATE', true),
+    'translation_provider' => env('TRANSLATION_PROVIDER', 'mymemory'),
 ];
+

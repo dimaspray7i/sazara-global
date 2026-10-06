@@ -17,12 +17,20 @@ class Product extends Model
     public function scopeFeatured($q) { return $q->where('is_featured', true); }
     public function scopeOrdered($q)  { return $q->orderBy('sort_order'); }
 
-    /* Ambil kolom sesuai bahasa aktif, fallback ke Inggris */
+    /* Ambil kolom sesuai bahasa aktif dengan dynamic TranslationService fallback */
     public function tr(string $field): string
     {
-        $column = app()->getLocale() === 'id' ? $field . '_id' : $field;
-        return filled($this->$column) ? $this->$column : $this->$field;
+        $locale = app()->getLocale();
+        if ($locale === 'id') {
+            $colId = $field . '_id';
+            if (filled($this->$colId)) {
+                return $this->$colId;
+            }
+        }
+        $fallback = (string) ($this->$field ?? '');
+        return \App\Services\TranslationService::get('product', $this->id, $field, $fallback, $locale);
     }
+
 
     public function imageUrl(): string
     {

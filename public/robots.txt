@@ -1,2 +1,9 @@
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /login-sazara
+Disallow: /admin-logout
+Disallow: /lang/
+
+Sitemap: https://sazaraglobal.com/sitemap.xml

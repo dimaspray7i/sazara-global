@@ -16,9 +16,17 @@ class Article extends Model
 
     public function tr(string $field): string
     {
-        $column = app()->getLocale() === 'id' ? $field . '_id' : $field;
-        return filled($this->$column) ? $this->$column : $this->$field;
+        $locale = app()->getLocale();
+        if ($locale === 'id') {
+            $colId = $field . '_id';
+            if (filled($this->$colId)) {
+                return $this->$colId;
+            }
+        }
+        $fallback = (string) ($this->$field ?? '');
+        return \App\Services\TranslationService::get('article', $this->id, $field, $fallback, $locale);
     }
+
 
     public function imageUrl(): string
     {
