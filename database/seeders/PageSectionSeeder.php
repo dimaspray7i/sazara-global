@@ -63,6 +63,14 @@ class PageSectionSeeder extends Seeder
             ['contact', 'info',   'address',  'Medan, North Sumatra, Indonesia'],
             ['contact', 'info',   'email',    'contact@sazaraglobal.com'],
             ['contact', 'info',   'website',  'www.sazaraglobal.com'],
+
+            // ---- GLOBAL SETTINGS ----
+            ['settings', 'general', 'whatsapp_number',  '+62 812-6040-7208'],
+            ['settings', 'general', 'whatsapp_message', 'Halo Sazara Global, saya ingin mengetahui lebih lanjut tentang layanan ekspor komoditas Anda.'],
+            ['settings', 'general', 'contact_person',   'Afriansyah Munar'],
+            ['settings', 'general', 'email',            'contact@sazaraglobal.com'],
+            ['settings', 'general', 'phone',            '+62 812-6040-7208'],
+            ['settings', 'general', 'address',          'Medan, North Sumatra, Indonesia'],
         ];
 
         foreach ($sections as [$page, $section, $field, $value]) {

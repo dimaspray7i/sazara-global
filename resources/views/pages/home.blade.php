@@ -28,7 +28,7 @@
         <h1>{{ $heroTitle1 }}<br>{{ $heroTitle2 }}</h1>
         <p class="lead">{{ $heroLead }}</p>
         <a class="btn btn-secondary" href="{{ $heroBtnUrl }}">{{ $heroBtnText }}</a>
-        <a class="btn btn-outline" data-wa="default" href="#">{{ __('ui.common.get_offer') }}</a>
+        <a class="btn btn-outline" data-wa="default" href="{{ $globalWaUrl }}" target="_blank" rel="noopener">{{ __('ui.common.get_offer') }}</a>
     </div>
 </section>
 
@@ -55,7 +55,7 @@
                         <p>{{ $product->tr('description') }}</p>
                         <div class="card-actions">
                             <a class="btn btn-outline" href="{{ route('products.show', $product->slug) }}">{{ __('ui.common.learn_more') }}</a>
-                            <a class="btn btn-secondary" data-wa="{{ $product->tr('name') }}" href="#">{{ __('ui.common.get_offer') }}</a>
+                            <a class="btn btn-secondary" data-wa="{{ $product->tr('name') }}" href="{{ $product->waUrl() }}" target="_blank" rel="noopener">{{ __('ui.common.get_offer') }}</a>
                         </div>
                     </div>
                 </article>
@@ -79,7 +79,7 @@
     <div class="container">
         <h2>{{ $ctaTitle }}</h2>
         <p>{{ $ctaText }}</p>
-        <a class="btn btn-secondary" data-wa="default" href="#">{{ __('ui.common.chat_wa') }}</a>
+        <a class="btn btn-secondary" data-wa="default" href="{{ $globalWaUrl }}" target="_blank" rel="noopener">{{ __('ui.common.chat_wa') }}</a>
         <a class="btn btn-outline light" href="{{ route('contact') }}">{{ __('ui.nav.contact') }}</a>
     </div>
 </section>

@@ -44,7 +44,7 @@
             <div class="adm-media-grid">
                 @foreach($media as $m)
                     <div class="adm-media-item" style="cursor: default;">
-                        <img class="adm-media-thumb" src="{{ $m->url() }}" alt="{{ $m->alt ?: $m->original_name }}" loading="lazy">
+                        <img class="adm-media-thumb" src="{{ $m->url() }}" alt="{{ $m->alt ?: $m->original_name }}" width="200" height="150" loading="lazy">
                         <div class="adm-media-meta">
                             <div class="adm-media-name" title="{{ $m->original_name }}">{{ $m->original_name }}</div>
                             <div class="adm-media-size">{{ $m->humanSize() }} · {{ $m->created_at->format('d M Y') }}</div>

@@ -38,7 +38,7 @@
                          data-media-url="{{ $m->url() }}"
                          data-media-path="{{ $m->path }}"
                          title="{{ $m->original_name }}">
-                        <img class="adm-media-thumb" src="{{ $m->url() }}" alt="{{ $m->alt ?: $m->original_name }}" loading="lazy">
+                        <img class="adm-media-thumb" src="{{ $m->url() }}" alt="{{ $m->alt ?: $m->original_name }}" width="160" height="120" loading="lazy">
                         <div class="adm-media-meta">
                             <div class="adm-media-name">{{ $m->original_name }}</div>
                             <div class="adm-media-size">{{ $m->humanSize() }}</div>

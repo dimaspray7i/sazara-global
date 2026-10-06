@@ -57,6 +57,42 @@ class PageSection extends Model
         );
     }
 
+    /**
+     * Get a global site setting.
+     */
+    public static function getSetting(string $field, mixed $default = null): string
+    {
+        $val = static::where('page', 'settings')
+            ->where('section', 'general')
+            ->where('field', $field)
+            ->value('value');
+
+        return ($val !== null && $val !== '') ? $val : ($default ?? config("sazara.{$field}", ''));
+    }
+
+    /**
+     * Get the sanitized WhatsApp number for wa.me URL (e.g. 6281260407208).
+     */
+    public static function getCleanWhatsApp(): string
+    {
+        $raw = static::getSetting('whatsapp_number', config('sazara.whatsapp_number', '6281260407208'));
+        $clean = preg_replace('/[^0-9]/', '', $raw);
+        if (str_starts_with($clean, '0')) {
+            $clean = '62' . substr($clean, 1);
+        }
+        return $clean ?: '6281260407208';
+    }
+
+    /**
+     * Build standard WhatsApp URL with message.
+     */
+    public static function getWhatsAppUrl(?string $message = null): string
+    {
+        $clean = static::getCleanWhatsApp();
+        $msg = $message ?: static::getSetting('whatsapp_message', config('sazara.whatsapp_message', 'Hello Sazara Global, I would like to make an inquiry...'));
+        return "https://wa.me/{$clean}?text=" . rawurlencode($msg);
+    }
+
     /** Relationship to media */
     public function media()
     {

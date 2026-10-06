@@ -90,6 +90,7 @@ Route::prefix('admin')->middleware(AdminAuth::class)->group(function () {
     Route::put('/pages/{page}',       [PageSectionController::class, 'update'])->name('admin.pages.update');
 
     // Settings
-    Route::get('/settings',  [SettingsController::class, 'index'])->name('admin.settings.index');
-    Route::put('/settings',  [SettingsController::class, 'update'])->name('admin.settings.update');
+    Route::get('/settings',       [SettingsController::class, 'index'])->name('admin.settings.index');
+    Route::put('/settings',       [SettingsController::class, 'update'])->name('admin.settings.update');
+    Route::put('/settings/site',  [SettingsController::class, 'updateSite'])->name('admin.settings.site');
 });

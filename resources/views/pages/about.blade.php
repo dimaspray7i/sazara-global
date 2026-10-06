@@ -113,7 +113,7 @@
     <div class="container">
         <h2>{{ $ctaTitle }}</h2>
         <p>{{ $ctaText }}</p>
-        <a class="btn btn-secondary" data-wa="default" href="#">{{ __('ui.common.chat_wa') }}</a>
+        <a class="btn btn-secondary" data-wa="default" href="{{ $globalWaUrl }}" target="_blank" rel="noopener">{{ __('ui.common.chat_wa') }}</a>
         <a class="btn btn-outline light" href="{{ route('contact') }}">{{ __('ui.nav.contact') }}</a>
     </div>
 </section>

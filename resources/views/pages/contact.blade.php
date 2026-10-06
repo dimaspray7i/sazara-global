@@ -29,8 +29,12 @@
                     <span class="contact-icon">🌐</span>
                     <p><a href="{{ str_starts_with($contactWebsite, 'http') ? $contactWebsite : 'https://' . $contactWebsite }}" target="_blank" rel="noopener">{{ $contactWebsite }}</a></p>
                 </div>
+                <div class="contact-item">
+                    <span class="contact-icon">💬</span>
+                    <p><a href="{{ $globalWaUrl }}" target="_blank" rel="noopener">WhatsApp: {{ $globalWaDisplay ?? '+62 812-6040-7208' }} ({{ $globalContactPerson ?? 'Afriansyah Munar' }})</a></p>
+                </div>
                 <div class="contact-cta-wrap">
-                    <a class="btn btn-secondary" data-wa="default" href="#">{{ __('ui.common.chat_wa') }}</a>
+                    <a class="btn btn-secondary" data-wa="default" href="{{ $globalWaUrl }}" target="_blank" rel="noopener">{{ __('ui.common.chat_wa') }}</a>
                 </div>
             </div>
             <form class="contact-form" id="contactForm" action="#" method="POST">

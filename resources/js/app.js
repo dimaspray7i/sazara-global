@@ -4,9 +4,28 @@
    Smooth Scroll, Mobile Navigation, WhatsApp & Animations
    ===================================================== */
 
-const WA_NUMBER = '6281211679167'; // Official WhatsApp Number
-const WA_DEFAULT = 'Hello Sazara Global, I would like to know more about your commodity export services.';
-const waURL = (msg) => `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`;
+const cleanPhone = (num) => {
+    let clean = (num || '').replace(/[^0-9]/g, '');
+    if (clean.startsWith('0')) clean = '62' + clean.slice(1);
+    return clean || '6281260407208';
+};
+
+const isIndonesian = () => document.documentElement.lang === 'id';
+
+const getWaNumber = () => cleanPhone(window.sazaraConfig?.waNumber || document.querySelector('meta[name="wa-number"]')?.content || '6281260407208');
+const getWaDefault = () => {
+    if (window.sazaraConfig?.waDefault && window.sazaraConfig.waDefault !== 'Custom Inquiry') {
+        return window.sazaraConfig.waDefault;
+    }
+    const meta = document.querySelector('meta[name="wa-default"]')?.content;
+    if (meta && meta !== 'Custom Inquiry') {
+        return meta;
+    }
+    return isIndonesian()
+        ? 'Halo Sazara Global, saya ingin mengetahui lebih lanjut tentang layanan ekspor komoditas Anda.'
+        : 'Hello Sazara Global, I would like to know more about your commodity export services.';
+};
+const waURL = (msg) => `https://wa.me/${getWaNumber()}?text=${encodeURIComponent(msg || getWaDefault())}`;
 
 document.addEventListener('DOMContentLoaded', () => {
     /* ==== 1. Dark / Light Theme Switcher ==== */
@@ -46,10 +65,23 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ==== 3. Get Offer Buttons on Cards ==== */
     document.querySelectorAll('[data-wa]').forEach((el) => {
         if (el.closest('.wa-widget')) return;
-        const product = el.dataset.wa;
-        el.href = waURL(product && product !== 'default'
-            ? `Hello Sazara Global, I am interested in ${product}. Please send me your best offer.`
-            : WA_DEFAULT);
+        const target = el.dataset.wa;
+        let msg = getWaDefault();
+
+        if (target && target !== 'default') {
+            const lower = target.toLowerCase();
+            if (lower.includes('other') || lower.includes('lainnya') || lower.includes('custom')) {
+                msg = isIndonesian()
+                    ? 'Halo Sazara Global, saya memiliki permintaan khusus (Custom Inquiry). Mohon informasi ketersediaan dan penawaran terbaik.'
+                    : 'Hello Sazara Global, I have a custom commodity inquiry. Please let me know the availability and best offer.';
+            } else {
+                msg = isIndonesian()
+                    ? `Halo Sazara Global, saya tertarik dengan ${target}. Mohon kirimkan penawaran terbaik.`
+                    : `Hello Sazara Global, I am interested in ${target}. Please send me your best offer.`;
+            }
+        }
+
+        el.href = waURL(msg);
         el.target = '_blank';
         el.rel = 'noopener';
     });

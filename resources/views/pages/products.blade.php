@@ -20,7 +20,7 @@
                         <p>{{ $product->tr('description') }}</p>
                         <div class="card-actions">
                             <a class="btn btn-outline" href="{{ route('products.show', $product->slug) }}">{{ __('ui.common.learn_more') }}</a>
-                            <a class="btn btn-secondary" data-wa="{{ $product->tr('name') }}" href="#">{{ __('ui.common.get_offer') }}</a>
+                            <a class="btn btn-secondary" data-wa="{{ $product->tr('name') }}" href="{{ $product->waUrl() }}" target="_blank" rel="noopener">{{ __('ui.common.get_offer') }}</a>
                         </div>
                     </div>
                 </article>

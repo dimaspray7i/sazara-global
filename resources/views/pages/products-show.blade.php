@@ -24,7 +24,7 @@
             @endif
 
             <div class="product-detail-actions">
-                <a class="btn btn-secondary" data-wa="{{ $product->tr('name') }}" href="#">{{ __('ui.common.get_offer_wa') }}</a>
+                <a class="btn btn-secondary" data-wa="{{ $product->tr('name') }}" href="{{ $product->waUrl() }}" target="_blank" rel="noopener">{{ __('ui.common.get_offer_wa') }}</a>
                 <a class="btn btn-outline" href="{{ route('contact') }}">{{ __('ui.nav.contact') }}</a>
             </div>
         </div>

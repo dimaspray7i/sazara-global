@@ -20,7 +20,7 @@
         </div>
         <div class="article-detail-footer">
             <a class="btn btn-outline" href="{{ route('articles.index') }}">&larr; {{ __('ui.common.back_articles') }}</a>
-            <a class="btn btn-secondary" data-wa="default" href="#">{{ __('ui.common.chat_wa') }}</a>
+            <a class="btn btn-secondary" data-wa="default" href="{{ $globalWaUrl }}" target="_blank" rel="noopener">{{ __('ui.common.chat_wa') }}</a>
         </div>
     </div>
 </section>

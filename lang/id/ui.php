@@ -73,7 +73,7 @@ return [
         'team_title' => 'Tim Kami',
         'team' => [
             ['Salim', 'Presiden Direktur', 'Memimpin arah strategis perusahaan, pengembangan bisnis, ekspansi pasar, dan keseluruhan operasional.', 'salim.jpg'],
-            ['Afriansyah', 'Direktur', 'Mendukung eksekusi bisnis, manajemen operasional, sourcing, dan koordinasi rantai pasok.', 'afriansyah.jpg'],
+            ['Afriansyah Munar', 'Direktur', 'Mendukung eksekusi bisnis, manajemen operasional, sourcing, dan koordinasi rantai pasok.', 'afriansyah.jpg'],
             ['Zakki', 'Komisaris', 'Memberikan pengawasan strategis serta mendukung arah jangka panjang dan tata kelola perusahaan.', 'zakki.jpg'],
         ],
     ],

@@ -34,4 +34,25 @@ class Product extends Model
         }
         return asset('images/hero.jpg');
     }
+
+    public function waUrl(): string
+    {
+        $cleanWa = PageSection::getCleanWhatsApp();
+        $isId = app()->getLocale() === 'id';
+
+        if (filled($this->wa_template)) {
+            $msg = $this->wa_template;
+        } elseif ($this->slug === 'other-commodities') {
+            $msg = $isId
+                ? 'Halo Sazara Global, saya memiliki permintaan khusus (Custom Inquiry). Mohon informasi ketersediaan dan penawaran terbaik.'
+                : 'Hello Sazara Global, I have a custom commodity inquiry. Please let me know the availability and best offer.';
+        } else {
+            $name = $this->tr('name');
+            $msg = $isId
+                ? "Halo Sazara Global, saya tertarik dengan {$name}. Mohon kirimkan penawaran terbaik."
+                : "Hello Sazara Global, I am interested in {$name}. Please send me your best offer.";
+        }
+
+        return "https://wa.me/{$cleanWa}?text=" . rawurlencode($msg);
+    }
 }

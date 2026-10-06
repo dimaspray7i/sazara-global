@@ -26,6 +26,15 @@
             }
         })();
     </script>
+    <meta name="wa-number" content="{{ $globalWaNumber ?? '6281260407208' }}">
+    <meta name="wa-default" content="{{ $globalWaDefault ?? 'Hello Sazara Global, I would like to make an inquiry...' }}">
+    <script>
+        window.sazaraConfig = {
+            waNumber: "{{ $globalWaNumber ?? '6281260407208' }}",
+            waDisplay: "{{ $globalWaDisplay ?? '+62 812-6040-7208' }}",
+            waDefault: "{{ addslashes($globalWaDefault ?? 'Hello Sazara Global, I would like to make an inquiry...') }}"
+        };
+    </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
@@ -99,8 +108,9 @@
         <div>
             <h4>{{ __('ui.footer.contact') }}</h4>
             <ul>
-                <li>Medan, North Sumatra, Indonesia</li>
-                <li>contact@sazaraglobal.com</li>
+                <li>{{ $globalAddress ?? 'Medan, North Sumatra, Indonesia' }}</li>
+                <li><a href="mailto:{{ $globalEmail ?? 'contact@sazaraglobal.com' }}">{{ $globalEmail ?? 'contact@sazaraglobal.com' }}</a></li>
+                <li><a href="{{ $globalWaUrl }}" target="_blank" rel="noopener">WhatsApp: {{ $globalWaDisplay ?? '+62 812-6040-7208' }} ({{ $globalContactPerson ?? 'Afriansyah Munar' }})</a></li>
                 <li>www.sazaraglobal.com</li>
             </ul>
         </div>
@@ -119,7 +129,7 @@
             <div class="wa-avatar"><img src="https://api.iconify.design/fa6-solid:ship.svg?color=%23062B55" alt="PT Sazara Global Trade"></div>
             <div class="wa-info">
                 <h4>PT Sazara Global Trade</h4>
-                <span class="wa-status">online</span>
+                <span class="wa-status">{{ $globalContactPerson ?? 'Afriansyah Munar' }} · Online</span>
             </div>
             <div class="wa-header-icons">
                 <button type="button" class="wa-icon" title="Video call" aria-label="Video call"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg></button>

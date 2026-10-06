@@ -73,7 +73,7 @@ return [
         'team_title' => 'Our Team',
         'team' => [
             ['Salim', 'President Director', "Leading the company's strategic direction, business development, market expansion, and overall operations.", 'salim.jpg'],
-            ['Afriansyah', 'Director', 'Supporting business execution, operational management, sourcing, and supply chain coordination.', 'afriansyah.jpg'],
+            ['Afriansyah Munar', 'Director', 'Supporting business execution, operational management, sourcing, and supply chain coordination.', 'afriansyah.jpg'],
             ['Zakki', 'Commissioner', "Providing strategic oversight and supporting the company's long-term direction and governance.", 'zakki.jpg'],
         ],
     ],
