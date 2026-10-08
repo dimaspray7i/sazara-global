@@ -61,6 +61,35 @@ class MediaController extends Controller
             return back()->withErrors(['file' => 'File type not allowed.']);
         }
 
+        // Calculate content hash for deduplication
+        $fileHash = md5_file($file->getRealPath());
+
+        // Check if an identical media file already exists
+        $existingMedia = Media::where('file_hash', $fileHash)->first();
+        if ($existingMedia) {
+            // Update metadata if newly provided
+            if ($request->filled('title') && empty($existingMedia->title)) {
+                $existingMedia->update([
+                    'title'      => $request->title,
+                    'title_id'   => $request->title_id ?? $existingMedia->title_id,
+                    'caption'    => $request->caption ?? $existingMedia->caption,
+                    'caption_id' => $request->caption_id ?? $existingMedia->caption_id,
+                ]);
+            }
+
+            if ($request->wantsJson() || $request->boolean('json')) {
+                return response()->json([
+                    'id'            => $existingMedia->id,
+                    'url'           => $existingMedia->url(),
+                    'path'          => $existingMedia->path,
+                    'original_name' => $existingMedia->original_name,
+                    'deduplicated'  => true,
+                ]);
+            }
+
+            return back()->with('info', 'This exact image already exists in the Media Library. Using existing asset.');
+        }
+
         // Generate safe unique filename
         $ext      = strtolower($file->getClientOriginalExtension());
         $safeName = Str::uuid() . '.' . $ext;
@@ -72,6 +101,7 @@ class MediaController extends Controller
             'mime_type'     => $mime,
             'size'          => $file->getSize(),
             'path'          => $path,
+            'file_hash'     => $fileHash,
             'alt'           => $request->alt ?? '',
             'title'         => $request->title ?? '',
             'title_id'      => $request->title_id ?? '',
@@ -84,9 +114,9 @@ class MediaController extends Controller
 
         if ($request->wantsJson() || $request->boolean('json')) {
             return response()->json([
-                'id'  => $media->id,
-                'url' => $media->url(),
-                'path'=> $media->path,
+                'id'            => $media->id,
+                'url'           => $media->url(),
+                'path'          => $media->path,
                 'original_name' => $media->original_name,
             ]);
         }

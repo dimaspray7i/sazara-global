@@ -26,9 +26,15 @@ class MediaSeeder extends Seeder
             $files = File::files($folder);
             foreach ($files as $file) {
                 $filename = $file->getFilename();
-                $targetPath = 'media/' . $filename;
+                $hash = md5_file($file->getPathname());
 
-                // Copy to storage/app/public/media/
+                // Deduplicate: check if this physical file already exists in Media
+                $existing = Media::where('file_hash', $hash)->first();
+                if ($existing) {
+                    continue;
+                }
+
+                $targetPath = 'media/' . $filename;
                 $fullDest = storage_path('app/public/' . $targetPath);
                 if (! File::exists($fullDest)) {
                     File::copy($file->getPathname(), $fullDest);
@@ -41,6 +47,7 @@ class MediaSeeder extends Seeder
                         'mime_type'     => File::mimeType($file->getPathname()) ?: 'image/jpeg',
                         'size'          => $file->getSize(),
                         'path'          => $targetPath,
+                        'file_hash'     => $hash,
                         'alt'           => ucwords(str_replace(['-', '_', '.jpg', '.png'], ' ', $filename)),
                     ]
                 );
@@ -51,6 +58,12 @@ class MediaSeeder extends Seeder
         foreach (['hero.jpg' => 'Sazara Hero', 'logo.jpg' => 'Sazara Logo'] as $img => $alt) {
             $path = public_path('images/' . $img);
             if (File::exists($path)) {
+                $hash = md5_file($path);
+                $existing = Media::where('file_hash', $hash)->first();
+                if ($existing) {
+                    continue;
+                }
+
                 $targetPath = 'media/' . $img;
                 $fullDest = storage_path('app/public/' . $targetPath);
                 if (! File::exists($fullDest)) {
@@ -63,6 +76,7 @@ class MediaSeeder extends Seeder
                         'mime_type'     => File::mimeType($path) ?: 'image/jpeg',
                         'size'          => File::size($path),
                         'path'          => $targetPath,
+                        'file_hash'     => $hash,
                         'alt'           => $alt,
                     ]
                 );

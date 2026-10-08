@@ -122,9 +122,32 @@ class ProductController extends Controller
             $allowed  = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
             if (! in_array($mime, $allowed, true)) return null;
 
+            // Deduplicate: check if image already exists by hash
+            $hash = md5_file($file->getRealPath());
+            $existing = \App\Models\Media::where('file_hash', $hash)->first();
+            if ($existing) {
+                return $existing->path;
+            }
+
             $ext  = strtolower($file->getClientOriginalExtension());
             $name = Str::uuid() . '.' . $ext;
-            return $file->storeAs('media', $name, 'public');
+            $path = $file->storeAs('media', $name, 'public');
+
+            // Also register in Media library so it is reusable
+            \App\Models\Media::create([
+                'filename'      => $name,
+                'original_name' => pathinfo($file->getClientOriginalName(), PATHINFO_BASENAME),
+                'mime_type'     => $mime,
+                'size'          => $file->getSize(),
+                'path'          => $path,
+                'file_hash'     => $hash,
+                'title'         => $request->input('name', ''),
+                'title_id'      => $request->input('name_id', ''),
+                'category'      => 'commodities',
+                'is_public'     => true,
+            ]);
+
+            return $path;
         }
 
         return null;

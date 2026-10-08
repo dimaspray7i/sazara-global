@@ -37,11 +37,10 @@
                          data-media-id="{{ $m->id }}"
                          data-media-url="{{ $m->url() }}"
                          data-media-path="{{ $m->path }}"
-                         title="{{ $m->original_name }}">
-                        <img class="adm-media-thumb" src="{{ $m->url() }}" alt="{{ $m->alt ?: $m->original_name }}" width="160" height="120" loading="lazy">
+                         title="{{ $m->title ?: 'Media #' . $m->id }}">
+                        <img class="adm-media-thumb" src="{{ $m->url() }}" alt="{{ $m->title ?: 'Media asset' }}" width="160" height="120" loading="lazy">
                         <div class="adm-media-meta">
-                            <div class="adm-media-name">{{ $m->original_name }}</div>
-                            <div class="adm-media-size">{{ $m->humanSize() }}</div>
+                            <div class="adm-media-name">{{ $m->title ?: 'Asset #' . $m->id }}</div>
                         </div>
                     </div>
                     @endforeach

@@ -41,36 +41,48 @@
         {{-- Gallery Grid --}}
         @if($galleryItems->isEmpty())
             <div class="gallery-empty">
+                <div class="gallery-empty-icon" style="margin-bottom: 12px; opacity: 0.4;">
+                    <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                </div>
                 <p>{{ __('ui.gallery.empty') }}</p>
             </div>
         @else
             <div class="gallery-grid">
                 @foreach($galleryItems as $item)
+                    @php
+                        $displayTitle   = $item->tr('title');
+                        $displayCaption = $item->tr('caption');
+                    @endphp
                     <div class="gallery-card"
                          data-src="{{ $item->url() }}"
-                         data-title="{{ $item->tr('title') }}"
-                         data-caption="{{ $item->tr('caption') }}"
+                         data-title="{{ $displayTitle }}"
+                         data-caption="{{ $displayCaption }}"
                          role="button"
                          tabindex="0"
-                         aria-label="{{ $item->tr('title') }}">
-                        <img src="{{ $item->url() }}"
-                             alt="{{ $item->tr('title') ?: $item->original_name }}"
-                             loading="lazy"
-                             width="400" height="300">
-                        <div class="gallery-card-overlay">
-                            <div class="gallery-card-info">
-                                @if($item->tr('title'))
-                                    <div class="gallery-card-title">{{ $item->tr('title') }}</div>
-                                @endif
-                                @if($item->tr('caption'))
-                                    <div class="gallery-card-caption">{{ $item->tr('caption') }}</div>
-                                @endif
-                            </div>
+                         aria-label="{{ $displayTitle ?: __('ui.gallery.title') }}">
+                        <div class="gallery-card-media">
+                            <img src="{{ $item->url() }}"
+                                 alt="{{ $displayTitle ?: 'Sazara Global' }}"
+                                 loading="lazy"
+                                 decoding="async"
+                                 width="480" height="360">
                         </div>
-                        <div class="gallery-card-expand" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
-                            </svg>
+                        <div class="gallery-card-overlay">
+                            @if(filled($displayTitle))
+                                <div class="gallery-card-info">
+                                    <div class="gallery-card-title">{{ $displayTitle }}</div>
+                                    @if(filled($displayCaption))
+                                        <div class="gallery-card-caption">{{ $displayCaption }}</div>
+                                    @endif
+                                </div>
+                            @endif
+                            <div class="gallery-card-expand" aria-hidden="true" title="View Full Image">
+                                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+                                </svg>
+                            </div>
                         </div>
                     </div>
                 @endforeach

@@ -85,31 +85,30 @@
             <div class="adm-media-grid">
                 @foreach($media as $m)
                     <div class="adm-media-item" style="cursor: default; position: relative;">
-                        <img class="adm-media-thumb" src="{{ $m->url() }}" alt="{{ $m->alt ?: $m->original_name }}" width="200" height="150" loading="lazy">
-
-                        {{-- Public Badge & Toggle --}}
-                        <div style="position: absolute; top: 8px; right: 8px; z-index: 2;">
-                            <form method="POST" action="{{ route('admin.media.toggle', $m) }}">
-                                @csrf
-                                <button type="submit" class="adm-badge {{ $m->is_public ? 'adm-badge-success' : 'adm-badge-danger' }}" style="cursor: pointer; border: none;" title="Click to toggle Public Gallery visibility">
-                                    {{ $m->is_public ? 'Public' : 'Hidden' }}
-                                </button>
-                            </form>
+                        <div class="adm-media-thumb-wrap">
+                            <img class="adm-media-thumb" src="{{ $m->url() }}" alt="{{ $m->title ?: 'Media image' }}" width="220" height="165" loading="lazy">
+                            <div class="adm-media-top-badge">
+                                <form method="POST" action="{{ route('admin.media.toggle', $m) }}" style="display:inline;">
+                                    @csrf
+                                    <button type="submit" class="adm-badge {{ $m->is_public ? 'adm-badge-success' : 'adm-badge-muted' }}" style="cursor: pointer; border: none; font-size: 10px; padding: 2px 7px;" title="Click to toggle Public Gallery visibility">
+                                        {{ $m->is_public ? 'Gallery Active' : 'Hidden' }}
+                                    </button>
+                                </form>
+                            </div>
                         </div>
 
                         <div class="adm-media-meta">
-                            <div class="adm-media-name" title="{{ $m->title ?: $m->original_name }}">
-                                <strong>{{ $m->title ?: $m->original_name }}</strong>
+                            <div class="adm-media-name" title="{{ $m->title ?: 'Untitled Asset' }}">
+                                <strong>{{ $m->title ?: 'Untitled Asset' }}</strong>
                             </div>
-                            <div class="adm-media-size" style="font-size: 11px; margin-top: 2px;">
-                                <span class="adm-badge adm-badge-info" style="font-size: 10px; padding: 1px 5px;">{{ ucfirst($m->category ?? 'commodities') }}</span>
-                                {{ $m->humanSize() }}
+                            <div class="adm-media-cat">
+                                <span class="adm-badge adm-badge-info" style="font-size: 10px; padding: 1px 6px;">{{ ucfirst($m->category ?? 'commodities') }}</span>
                             </div>
                         </div>
 
-                        {{-- Edit Metadata Accordion/Form --}}
-                        <details style="margin: 8px 12px; font-size: 12px; background: rgba(0,0,0,0.03); padding: 6px; border-radius: 6px;">
-                            <summary style="cursor: pointer; color: var(--brand-green); font-weight: 600;">Edit Gallery Details</summary>
+                        {{-- Clean Edit Details Accordion --}}
+                        <details class="adm-media-details">
+                            <summary>Edit Details</summary>
                             <form method="POST" action="{{ route('admin.media.update', $m) }}" style="margin-top: 8px;">
                                 @csrf
                                 @method('PUT')
@@ -144,7 +143,7 @@
                             <form method="POST" action="{{ route('admin.media.destroy', $m) }}" style="display:inline">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="adm-btn-icon danger" title="Delete file" data-confirm-delete="Delete file '{{ $m->original_name }}'?">
+                                <button type="submit" class="adm-btn-icon danger" title="Delete file" data-confirm-delete="Delete media asset '{{ $m->title ?: 'this image' }}'?">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
                                 </button>
                             </form>
