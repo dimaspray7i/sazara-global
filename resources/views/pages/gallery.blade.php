@@ -91,7 +91,7 @@
             {{-- Pagination --}}
             @if($galleryItems->hasPages())
                 <div class="pagination-wrap" style="text-align:center; margin-top:40px;">
-                    {{ $galleryItems->appends(request()->query())->links() }}
+                    {{ $galleryItems->appends(request()->query())->links('partials.pagination') }}
                 </div>
             @endif
         @endif
@@ -100,9 +100,21 @@
 
 {{-- Lightbox --}}
 <div class="lightbox-overlay" id="lightboxOverlay" hidden aria-modal="true" role="dialog" aria-label="{{ __('ui.gallery.title') }}">
-    <button class="lightbox-close" id="lightboxClose" aria-label="{{ __('ui.gallery.lightbox_close') }}">&times;</button>
-    <button class="lightbox-prev"  id="lightboxPrev"  aria-label="{{ __('ui.gallery.prev') }}">&#8249;</button>
-    <button class="lightbox-next"  id="lightboxNext"  aria-label="{{ __('ui.gallery.next') }}">&#8250;</button>
+    <button class="lightbox-close" id="lightboxClose" aria-label="{{ __('ui.gallery.lightbox_close') }}">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+    </button>
+    <button class="lightbox-prev"  id="lightboxPrev"  aria-label="{{ __('ui.gallery.prev') }}">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+    </button>
+    <button class="lightbox-next"  id="lightboxNext"  aria-label="{{ __('ui.gallery.next') }}">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+    </button>
     <div class="lightbox-content">
         <img class="lightbox-img" id="lightboxImg" src="" alt="">
         <div class="lightbox-title"   id="lightboxTitle"></div>

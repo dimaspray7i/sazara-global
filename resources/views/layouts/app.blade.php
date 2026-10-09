@@ -269,7 +269,10 @@ $htmlDir = ($currentLanguage && $currentLanguage->isRtl()) ? 'rtl' : 'ltr';
             </ul>
         </div>
     </div>
-    <div class="footer-bottom">© {{ date('Y') }} PT Sazara Global Trade. {{ __('ui.footer.rights') }}</div>
+    <div class="footer-bottom">
+        <span>© {{ date('Y') }} PT Sazara Global Trade. {{ __('ui.footer.rights') }}</span>
+        <a href="{{ route('terms', ['locale' => app()->getLocale()]) }}" class="footer-terms-link">{{ __('ui.footer.terms') }}</a>
+    </div>
 </footer>
 
 {{-- ==== WhatsApp Chat Widget ==== --}}

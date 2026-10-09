@@ -46,6 +46,7 @@ Route::get('/sitemap.xml', function () {
         ['id' => 'articles','id_path' => '/articles','en_path' => '/articles','priority' => '0.8'],
         ['id' => 'gallery', 'id_path' => '/gallery', 'en_path' => '/gallery', 'priority' => '0.7'],
         ['id' => 'contact', 'id_path' => '/contact', 'en_path' => '/contact', 'priority' => '0.6'],
+        ['id' => 'terms',   'id_path' => '/terms',   'en_path' => '/terms',   'priority' => '0.3'],
     ];
 
     $products = Product::active()->ordered()->get();
@@ -179,6 +180,7 @@ Route::prefix('{locale}')
 
     Route::get('/about',   fn () => view('pages.about')  )->name('about');
     Route::get('/contact', fn () => view('pages.contact'))->name('contact');
+    Route::get('/terms',   fn () => view('pages.terms')  )->name('terms');
 
     Route::get('/gallery', [PublicGalleryController::class, 'index'])->name('gallery.index');
 
@@ -195,6 +197,7 @@ Route::get('/about-us',         fn () => redirect()->route('about', ['locale' =>
 Route::get('/contact-us',       fn () => redirect()->route('contact', ['locale' => session('locale', 'en')], 301))->name('contact.legacy');
 Route::get('/gallery',          fn () => redirect()->route('gallery.index', ['locale' => session('locale', 'en')], 301))->name('gallery.legacy');
 Route::get('/search',           fn () => redirect()->route('search', ['locale' => session('locale', 'en')], 301))->name('search.legacy');
+Route::get('/terms',            fn () => redirect()->route('terms', ['locale' => session('locale', 'en')], 301))->name('terms.legacy');
 
 /* ================================================================
     ADMIN AUTH — Hidden login URL
