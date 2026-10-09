@@ -106,16 +106,31 @@
 <div class="adm-card">
     <div class="adm-card-header">
         <div class="adm-card-title">Database Content Translations</div>
-        <form method="GET" action="{{ route('admin.translations.index') }}" class="adm-flex adm-gap-8">
-            <label class="adm-label" style="margin: 0; align-self: center;">Select Language:</label>
-            <select name="lang" class="adm-select" onchange="this.form.submit()" style="padding: 6px 12px; font-size: 13px;">
-                @foreach($languages as $l)
-                    <option value="{{ $l->code }}" {{ ($activeLang?->code === $l->code) ? 'selected' : '' }}>
-                        {{ $l->flag }} {{ $l->name }} ({{ $l->code }})
-                    </option>
-                @endforeach
-            </select>
-        </form>
+        <div class="adm-flex adm-gap-8" style="align-items: center; flex-wrap: wrap;">
+            @if($activeLang && !in_array($activeLang->code, ['en', 'id']))
+                <button id="btn-auto-translate"
+                        class="adm-btn adm-btn-outline adm-btn-sm"
+                        style="font-size: 12px; display: inline-flex; align-items: center; gap: 5px;"
+                        data-lang="{{ $activeLang->code }}"
+                        data-lang-name="{{ $activeLang->name }}"
+                        data-url="{{ route('admin.translations.auto') }}"
+                        data-csrf="{{ csrf_token() }}"
+                        onclick="startBatchTranslate(this)">
+                    <span>⚡</span> <span id="btn-label-auto">Auto-Translate Missing</span>
+                </button>
+                <span id="translate-progress" style="font-size: 12px; color: var(--adm-muted); display:none;"></span>
+            @endif
+            <form method="GET" action="{{ route('admin.translations.index') }}" class="adm-flex adm-gap-8">
+                <label class="adm-label" style="margin: 0; align-self: center;">Select Language:</label>
+                <select name="lang" class="adm-select" onchange="this.form.submit()" style="padding: 6px 12px; font-size: 13px;">
+                    @foreach($languages as $l)
+                        <option value="{{ $l->code }}" {{ ($activeLang?->code === $l->code) ? 'selected' : '' }}>
+                            {{ $l->flag }} {{ $l->name }} ({{ $l->code }})
+                        </option>
+                    @endforeach
+                </select>
+            </form>
+        </div>
     </div>
 
     <div class="adm-card-body">
@@ -161,9 +176,119 @@
             <div class="adm-empty">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                 <div class="adm-empty-title">No cached translations for {{ $activeLang?->name ?? 'this language' }} yet</div>
-                <p>When users browse the website in this language, translations will be automatically retrieved and cached here, ready for your customization.</p>
+                <p>When users browse the website in this language, translations will fall back safely to English. You can also populate translations automatically right now:</p>
+                @if($activeLang && !in_array($activeLang->code, ['en', 'id']))
+                    <div style="margin-top: 14px;">
+                        <button class="adm-btn adm-btn-primary adm-btn-sm"
+                                data-lang="{{ $activeLang->code }}"
+                                data-lang-name="{{ $activeLang->name }}"
+                                data-url="{{ route('admin.translations.auto') }}"
+                                data-csrf="{{ csrf_token() }}"
+                                onclick="startBatchTranslate(this)">
+                            <span>⚡</span> Generate Translations for {{ $activeLang->name }}
+                        </button>
+                        <span id="translate-progress-empty" style="display:block; margin-top: 8px; font-size: 13px; color: var(--adm-muted);"></span>
+                    </div>
+                @endif
             </div>
         @endif
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+function startBatchTranslate(btn) {
+    const lang     = btn.dataset.lang;
+    const langName = btn.dataset.langName;
+    const url      = btn.dataset.url;
+    const csrf     = btn.dataset.csrf;
+    const label    = document.getElementById('btn-label-auto');
+    const prog     = document.getElementById('translate-progress') || document.getElementById('translate-progress-empty');
+
+    if (! confirm('Auto-translate all missing items for ' + langName + '?\n\nRuns in small batches (~5 items each). Existing manual translations will NOT be overwritten.')) {
+        return;
+    }
+
+    btn.disabled = true;
+    if (label) label.textContent = 'Translating…';
+    if (prog)  { prog.style.display = 'inline'; prog.textContent = 'Starting…'; }
+
+    let offset      = 0;
+    let totTranslated = 0;
+    let totSkipped    = 0;
+    let totFailed     = 0;
+    let retryCount    = 0;
+    const MAX_RETRIES = 2;
+
+    function updateProgress(current, total) {
+        if (!prog) return;
+        const pct = total > 0 ? Math.min(100, Math.round((current / total) * 100)) : 0;
+        prog.textContent = pct + '% (' + current + '/' + (total || '?') + ') — '
+            + totTranslated + ' translated'
+            + (totSkipped > 0 ? ', ' + totSkipped + ' skipped' : '')
+            + (totFailed  > 0 ? ', ' + totFailed  + ' failed'  : '');
+    }
+
+    function runBatch() {
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrf,
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({ target_lang: lang, offset: offset }),
+        })
+        .then(r => {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        })
+        .then(data => {
+            retryCount = 0; // reset on success
+            totTranslated += (data.translated || 0);
+            totSkipped    += (data.skipped    || 0);
+            totFailed     += (data.failed     || 0);
+            // Server always returns next offset; fallback to +5 if missing
+            offset = (typeof data.offset === 'number') ? data.offset : (offset + 5);
+
+            updateProgress(offset, data.total || 0);
+
+            if (data.done) {
+                if (label) label.textContent = '✓ Done';
+                if (prog)  prog.textContent = '✓ Done — ' + totTranslated + ' translated, '
+                    + totSkipped + ' skipped, ' + totFailed + ' failed. Reloading…';
+                btn.disabled = false;
+                setTimeout(() => location.reload(), 2500);
+            } else {
+                setTimeout(runBatch, 300);
+            }
+        })
+        .catch(err => {
+            retryCount++;
+            if (retryCount <= MAX_RETRIES) {
+                if (prog) prog.textContent = 'Retrying batch at ' + offset + '… (attempt ' + retryCount + ')';
+                setTimeout(runBatch, 2000 * retryCount);
+            } else {
+                if (prog) prog.textContent = '⚠ Error at offset ' + offset + ': ' + err.message
+                    + ' — Click ⚡ Retry to continue from here.';
+                btn.disabled = false;
+                btn.dataset.offset = offset; // save resume point
+                if (label) label.textContent = '⚡ Retry';
+                btn.onclick = function() { offset = parseInt(btn.dataset.offset || 0); retryCount = 0; startResume(btn); };
+            }
+        });
+    }
+
+    function startResume(b) {
+        b.disabled = true;
+        if (label) label.textContent = 'Translating…';
+        retryCount = 0;
+        runBatch();
+    }
+
+    runBatch();
+}
+</script>
+@endpush
+

@@ -12,66 +12,83 @@ class SeedTranslations extends Command
 
     public function handle(): int
     {
-        $langs = ['zh', 'ja', 'ko', 'ar', 'es', 'fr', 'de', 'pt', 'it', 'ru', 'hi', 'th', 'vi'];
+        // Get all active languages excluding static file languages (en, id)
+        $langs = \App\Models\Language::where('is_active', true)
+            ->whereNotIn('code', ['en', 'id'])
+            ->orderBy('sort_order', 'asc')
+            ->pluck('code')
+            ->toArray();
 
-        $keys = [
-            'ui.nav.home'        => 'Home',
-            'ui.nav.product'     => 'Product',
-            'ui.nav.article'     => 'Article',
-            'ui.nav.about'       => 'About Us',
-            'ui.nav.contact'     => 'Contact Us',
-            'ui.nav.gallery'     => 'Gallery',
-            'ui.common.get_offer'    => 'Get Offer',
-            'ui.common.learn_more'   => 'Learn More',
-            'ui.common.read_more'    => 'Read More',
-            'ui.common.chat_wa'      => 'Chat on WhatsApp',
-            'ui.common.get_offer_wa' => 'Get Offer via WhatsApp',
-            'ui.common.send'         => 'Send Message',
-            'ui.common.view_products'=> 'View Products',
-            'ui.common.specification'=> 'Specification',
-            'ui.common.back_products'=> 'Back to Products',
-            'ui.common.back_articles'=> 'Back to Articles',
-            'ui.footer.tagline'  => 'Indonesian Commodities. Global Connections.',
-            'ui.footer.tagline2' => 'Trusted Partner, Global Impact.',
-            'ui.footer.pages'    => 'Pages',
-            'ui.footer.commodities' => 'Commodities',
-            'ui.footer.contact'  => 'Contact',
-            'ui.footer.rights'   => 'All rights reserved.',
-            'ui.footer.gallery'  => 'Gallery',
-            'ui.home.title1'     => 'Indonesian Commodities.',
-            'ui.home.title2'     => 'Global Connections.',
-            'ui.home.eyebrow'    => 'PT Sazara Global Trade · Medan, Indonesia',
-            'ui.home.flow_title' => 'Our Business Flow',
-            'ui.home.why_title'  => 'Why Partner With Us?',
-            'ui.home.featured_title' => 'Featured Commodities',
-            'ui.home.cta_title'  => "Let's Build Global Opportunities Together.",
-            'ui.products.title'  => 'Our Commodities',
-            'ui.articles.title'  => 'Articles & Insights',
-            'ui.gallery.title'   => 'Gallery',
-            'ui.gallery.all'     => 'All',
-            'ui.gallery.commodities' => 'Commodities',
-            'ui.contact.title'   => "Let's Build Global Opportunities Together.",
-            'ui.about.heading'   => 'Connecting Indonesian Commodities with Global Markets',
-            'ui.about.vision_title'  => 'Our Vision',
-            'ui.about.mission_title' => 'Our Mission',
-            'ui.about.values_title'  => 'Our Core Values',
-            'ui.about.story_title'   => 'Our Story',
-            'ui.about.team_title'    => 'Our Team',
-            'ui.search.placeholder'  => 'Search products, articles, gallery...',
-            'ui.search.title'        => 'Search Results',
-        ];
+        if (empty($langs)) {
+            $langs = ['zh', 'ja', 'ko', 'ar', 'es', 'fr', 'de', 'pt', 'it', 'ru', 'hi', 'th', 'vi'];
+        }
+
+        // Dynamically load all string keys from lang/en/ui.php
+        $enUi = config('ui', []);
+        if (empty($enUi) && file_exists(lang_path('en/ui.php'))) {
+            $enUi = require lang_path('en/ui.php');
+        }
+
+        $flatten = function ($array, $prefix = 'ui.') use (&$flatten) {
+            $result = [];
+            foreach ($array as $key => $value) {
+                if (is_array($value)) {
+                    // Check if numeric indexed list of tuples (e.g. flow, why)
+                    if (array_is_list($value)) {
+                        foreach ($value as $idx => $item) {
+                            if (is_array($item)) {
+                                foreach ($item as $subIdx => $subVal) {
+                                    if (is_string($subVal)) {
+                                        $result["{$prefix}{$key}.{$idx}.{$subIdx}"] = $subVal;
+                                    }
+                                }
+                            } elseif (is_string($item)) {
+                                $result["{$prefix}{$key}.{$idx}"] = $item;
+                            }
+                        }
+                    } else {
+                        $result = array_merge($result, $flatten($value, "{$prefix}{$key}."));
+                    }
+                } elseif (is_string($value)) {
+                    $result["{$prefix}{$key}"] = $value;
+                }
+            }
+            return $result;
+        };
+
+        $keys = $flatten($enUi);
 
         $total = count($langs) * count($keys);
         $bar = $this->output->createProgressBar($total);
         $bar->start();
 
+        $seededCount = 0;
+        $skippedCount = 0;
+
         foreach ($langs as $lang) {
             $this->line('');
-            $this->info("Seeding lang: {$lang}");
+            $this->info("Checking translations for: [{$lang}]");
             foreach ($keys as $key => $en) {
+                // Check if already exists in DB (DO NOT overwrite admin edits)
+                $existing = \App\Models\ContentTranslation::where('content_type', 'ui')
+                    ->where('content_id', $key)
+                    ->where('field', 'text')
+                    ->where('language', $lang)
+                    ->exists();
+
+                if ($existing) {
+                    $skippedCount++;
+                    $bar->advance();
+                    continue;
+                }
+
                 try {
-                    TranslationService::get('ui', $key, 'text', $en, $lang);
-                    usleep(200000); // 200ms to avoid API rate limiting
+                    $translated = TranslationService::autoTranslate($en, 'en', $lang);
+                    if (filled($translated) && $translated !== $en) {
+                        \App\Models\ContentTranslation::set('ui', $key, 'text', $lang, $translated);
+                        $seededCount++;
+                    }
+                    usleep(150000); // 150ms throttle
                 } catch (\Throwable $e) {
                     $this->warn("  Failed [{$lang}] {$key}: " . $e->getMessage());
                 }
@@ -81,7 +98,7 @@ class SeedTranslations extends Command
 
         $bar->finish();
         $this->line('');
-        $this->info('Translation seeding complete!');
+        $this->info("Translation seeding complete! Newly added: {$seededCount}, Preserved existing: {$skippedCount}");
 
         return self::SUCCESS;
     }

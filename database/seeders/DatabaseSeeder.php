@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             PageSectionSeeder::class,
             MediaSeeder::class,
             AdminSeeder::class,
+            LanguageSeeder::class,
         ]);
     }
 }

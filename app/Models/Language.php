@@ -57,9 +57,11 @@ class Language extends Model
     {
         static::saved(function () {
             Cache::forget('sazara_active_languages');
+            Cache::forget('sazara_supported_lang_codes');
         });
         static::deleted(function () {
             Cache::forget('sazara_active_languages');
+            Cache::forget('sazara_supported_lang_codes');
         });
     }
 }

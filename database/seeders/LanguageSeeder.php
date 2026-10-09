@@ -30,5 +30,8 @@ class LanguageSeeder extends Seeder
         foreach ($languages as $lang) {
             Language::updateOrCreate(['code' => $lang['code']], $lang);
         }
+
+        \Illuminate\Support\Facades\Cache::forget('sazara_active_languages');
+        \Illuminate\Support\Facades\Cache::forget('sazara_supported_lang_codes');
     }
 }

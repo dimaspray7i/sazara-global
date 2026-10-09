@@ -123,6 +123,15 @@ Route::get('/sitemap.xml', function () {
 Route::get('/lang/{locale}', function (string $locale) {
     $locale = strtolower($locale);
     $supported = \App\Models\Language::getSupportedCodes();
+
+    // If not found in cached supported codes, do a direct DB check in case cache is stale
+    if (! in_array($locale, $supported, true)) {
+        if (\App\Models\Language::where('is_active', true)->where('code', $locale)->exists()) {
+            \Illuminate\Support\Facades\Cache::forget('sazara_supported_lang_codes');
+            $supported[] = $locale;
+        }
+    }
+
     abort_unless(in_array($locale, $supported, true), 404);
 
     session(['locale' => $locale]);
