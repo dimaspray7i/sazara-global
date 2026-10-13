@@ -51,6 +51,7 @@ class MediaController extends Controller
             'caption_id'  => ['nullable', 'string'],
             'category'    => ['nullable', 'string', 'max:50'],
             'is_public'   => ['nullable', 'boolean'],
+            'is_gallery'  => ['nullable', 'boolean'],
         ]);
 
         $file = $request->file('file');
@@ -107,8 +108,9 @@ class MediaController extends Controller
             'title_id'      => $request->title_id ?? '',
             'caption'       => $request->caption ?? '',
             'caption_id'    => $request->caption_id ?? '',
-            'category'      => $request->category ?? 'commodities',
+            'category'      => $request->category ?? 'logistics',
             'is_public'     => $request->has('is_public') ? $request->boolean('is_public') : true,
+            'is_gallery'    => $request->has('is_gallery') ? $request->boolean('is_gallery') : false,
             'sort_order'    => 0,
         ]);
 
@@ -133,10 +135,12 @@ class MediaController extends Controller
             'caption_id'  => ['nullable', 'string'],
             'category'    => ['nullable', 'string', 'max:50'],
             'is_public'   => ['nullable'],
+            'is_gallery'  => ['nullable'],
             'sort_order'  => ['nullable', 'integer'],
         ]);
 
-        $validated['is_public'] = $request->has('is_public') ? $request->boolean('is_public') : false;
+        $validated['is_public']  = $request->has('is_public')  ? $request->boolean('is_public')  : false;
+        $validated['is_gallery'] = $request->has('is_gallery') ? $request->boolean('is_gallery') : false;
 
         $medium->update($validated);
 
@@ -149,13 +153,25 @@ class MediaController extends Controller
 
     public function toggle(Request $request, Media $medium)
     {
-        $medium->update(['is_public' => ! $medium->is_public]);
-
-        if ($request->wantsJson()) {
-            return response()->json(['is_public' => $medium->is_public]);
+        $field = $request->input('field', 'is_gallery');
+        if (! in_array($field, ['is_public', 'is_gallery'], true)) {
+            $field = 'is_gallery';
         }
 
-        return back()->with('success', 'Media visibility toggled.');
+        $medium->update([$field => ! $medium->$field]);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'field' => $field,
+                'value' => $medium->$field,
+                'is_public' => $medium->is_public,
+                'is_gallery' => $medium->is_gallery,
+            ]);
+        }
+
+        $label = $field === 'is_gallery' ? 'Gallery status' : 'Public visibility';
+        return back()->with('success', "{$label} updated.");
     }
 
     public function destroy(Request $request, Media $medium)

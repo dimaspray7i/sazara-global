@@ -8,17 +8,31 @@ class Media extends Model
 {
     protected $fillable = [
         'filename', 'original_name', 'mime_type', 'size', 'path', 'file_hash', 'alt',
-        'title', 'title_id', 'caption', 'caption_id', 'category', 'is_public', 'sort_order',
+        'title', 'title_id', 'caption', 'caption_id', 'category',
+        'is_public', 'is_gallery', 'sort_order',
     ];
 
     protected $casts = [
         'is_public'   => 'boolean',
+        'is_gallery'  => 'boolean',
         'sort_order'  => 'integer',
     ];
 
+    /**
+     * Scope: media available for general use (usable in products, articles, pages).
+     */
     public function scopePublic($q)
     {
         return $q->where('is_public', true);
+    }
+
+    /**
+     * Scope: media explicitly selected for the public Gallery.
+     * Must be both published (is_public) AND marked for gallery (is_gallery).
+     */
+    public function scopeGallery($q)
+    {
+        return $q->where('is_public', true)->where('is_gallery', true);
     }
 
     public function scopeCategory($q, ?string $cat)
@@ -45,7 +59,6 @@ class Media extends Model
 
         return \App\Services\TranslationService::get('media', $this->id, $field, $fallback, $locale);
     }
-
 
     /** Full public URL for the image */
     public function url(): string

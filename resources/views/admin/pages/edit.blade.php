@@ -27,7 +27,7 @@
             @method('PUT')
 
             @foreach($config['sections'] as $secKey => $sec)
-                <div class="adm-card adm-mb-24" style="border: 1px solid var(--adm-border); box-shadow: none;">
+                <div class="adm-card adm-mb-24" style="border: 1 px solid var(--adm-border); box-shadow: none;">
                     <div class="adm-card-header" style="background: var(--adm-surface);">
                         <div class="adm-card-title" style="font-size: 13.5px; text-transform: uppercase; letter-spacing: 0.05em;">
                             {{ $sec['label'] }}

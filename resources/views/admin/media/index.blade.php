@@ -36,18 +36,26 @@
 
             <div class="adm-grid-2 adm-gap-16">
                 <div class="adm-form-group">
-                    <label class="adm-label">Category</label>
+                    <label class="adm-label">Activity Category</label>
                     <select name="category" class="adm-select">
-                        <option value="commodities">Commodities</option>
-                        <option value="insights">Insights / Operations</option>
-                        <option value="company">Company</option>
-                        <option value="system">System</option>
+                        <option value="logistics">Logistics & Shipping</option>
+                        <option value="plantation">Plantation & Farms</option>
+                        <option value="harvesting">Harvesting</option>
+                        <option value="packaging">Quality & Packaging</option>
+                        <option value="export">Export & Loading</option>
+                        <option value="company">Company & Field Visits</option>
+                        <option value="commodities">Commodities (General)</option>
+                        <option value="system">System / Internal (Hidden)</option>
                     </select>
                 </div>
-                <div class="adm-form-group" style="display: flex; align-items: center; gap: 8px; margin-top: 24px;">
+                <div class="adm-form-group" style="display: flex; flex-direction: column; gap: 8px; margin-top: 18px;">
                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                         <input type="checkbox" name="is_public" value="1" checked>
-                        <span class="adm-label" style="margin: 0;">Show in Public Gallery</span>
+                        <span class="adm-label" style="margin: 0;">Visible in Media Library</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" name="is_gallery" value="1">
+                        <span class="adm-label" style="margin: 0; color: var(--adm-primary, #3C8C2B); font-weight: 600;">Display in Public Gallery</span>
                     </label>
                 </div>
             </div>
@@ -63,13 +71,17 @@
         <div class="adm-card-title">All Files ({{ $media->total() }})</div>
         <div class="adm-flex adm-gap-8" style="flex-wrap: wrap;">
             {{-- Category Filter --}}
-            <form method="GET" action="{{ route('admin.media.index') }}" class="adm-flex adm-gap-8">
+            <form method="GET" action="{{ route('admin.media.index') }}" class="adm-flex adm-gap-8" style="flex-wrap: wrap;">
                 <select name="category" class="adm-select" onchange="this.form.submit()" style="padding: 6px 10px; font-size: 13px;">
                     <option value="">All Categories</option>
+                    <option value="logistics" {{ request('category') === 'logistics' ? 'selected' : '' }}>Logistics & Shipping</option>
+                    <option value="plantation" {{ request('category') === 'plantation' ? 'selected' : '' }}>Plantation & Farms</option>
+                    <option value="harvesting" {{ request('category') === 'harvesting' ? 'selected' : '' }}>Harvesting</option>
+                    <option value="packaging" {{ request('category') === 'packaging' ? 'selected' : '' }}>Quality & Packaging</option>
+                    <option value="export" {{ request('category') === 'export' ? 'selected' : '' }}>Export & Loading</option>
+                    <option value="company" {{ request('category') === 'company' ? 'selected' : '' }}>Company & Field</option>
                     <option value="commodities" {{ request('category') === 'commodities' ? 'selected' : '' }}>Commodities</option>
-                    <option value="insights" {{ request('category') === 'insights' ? 'selected' : '' }}>Insights</option>
-                    <option value="company" {{ request('category') === 'company' ? 'selected' : '' }}>Company</option>
-                    <option value="system" {{ request('category') === 'system' ? 'selected' : '' }}>System</option>
+                    <option value="system" {{ request('category') === 'system' ? 'selected' : '' }}>System (Hidden)</option>
                 </select>
                 <input type="text" name="search" class="adm-input" placeholder="Search..." value="{{ request('search') }}" style="max-width: 180px; padding: 6px 10px; font-size: 13px;">
                 <button type="submit" class="adm-btn adm-btn-outline adm-btn-sm">Filter</button>
@@ -87,11 +99,12 @@
                     <div class="adm-media-item" style="cursor: default; position: relative;">
                         <div class="adm-media-thumb-wrap">
                             <img class="adm-media-thumb" src="{{ $m->url() }}" alt="{{ $m->title ?: 'Media image' }}" width="220" height="165" loading="lazy">
-                            <div class="adm-media-top-badge">
+                            <div class="adm-media-top-badge" style="display: flex; gap: 4px; flex-direction: column; align-items: flex-end;">
                                 <form method="POST" action="{{ route('admin.media.toggle', $m) }}" style="display:inline;">
                                     @csrf
-                                    <button type="submit" class="adm-badge {{ $m->is_public ? 'adm-badge-success' : 'adm-badge-muted' }}" style="cursor: pointer; border: none; font-size: 10px; padding: 2px 7px;" title="Click to toggle Public Gallery visibility">
-                                        {{ $m->is_public ? 'Gallery Active' : 'Hidden' }}
+                                    <input type="hidden" name="field" value="is_gallery">
+                                    <button type="submit" class="adm-badge {{ $m->is_gallery ? 'adm-badge-success' : 'adm-badge-muted' }}" style="cursor: pointer; border: none; font-size: 10px; padding: 2px 7px;" title="Click to toggle Public Gallery inclusion">
+                                        {{ $m->is_gallery ? '★ In Gallery' : 'Not in Gallery' }}
                                     </button>
                                 </form>
                             </div>
@@ -102,7 +115,7 @@
                                 <strong>{{ $m->title ?: 'Untitled Asset' }}</strong>
                             </div>
                             <div class="adm-media-cat">
-                                <span class="adm-badge adm-badge-info" style="font-size: 10px; padding: 1px 6px;">{{ ucfirst($m->category ?? 'commodities') }}</span>
+                                <span class="adm-badge adm-badge-info" style="font-size: 10px; padding: 1px 6px;">{{ ucfirst($m->category ?? 'logistics') }}</span>
                             </div>
                         </div>
 
@@ -124,15 +137,29 @@
                                 <div style="margin-bottom: 6px;">
                                     <input type="text" name="caption_id" class="adm-input" value="{{ $m->caption_id }}" placeholder="Keterangan (ID)" style="font-size: 11px; padding: 4px 6px;">
                                 </div>
-                                <div style="margin-bottom: 6px; display: flex; gap: 4px;">
-                                    <select name="category" class="adm-select" style="font-size: 11px; padding: 4px 6px; flex: 1;">
+                                <div style="margin-bottom: 6px;">
+                                    <select name="category" class="adm-select" style="font-size: 11px; padding: 4px 6px; width: 100%;">
+                                        <option value="logistics" {{ $m->category === 'logistics' ? 'selected' : '' }}>Logistics & Shipping</option>
+                                        <option value="plantation" {{ $m->category === 'plantation' ? 'selected' : '' }}>Plantation & Farms</option>
+                                        <option value="harvesting" {{ $m->category === 'harvesting' ? 'selected' : '' }}>Harvesting</option>
+                                        <option value="packaging" {{ $m->category === 'packaging' ? 'selected' : '' }}>Quality & Packaging</option>
+                                        <option value="export" {{ $m->category === 'export' ? 'selected' : '' }}>Export & Loading</option>
+                                        <option value="company" {{ $m->category === 'company' ? 'selected' : '' }}>Company & Field</option>
                                         <option value="commodities" {{ $m->category === 'commodities' ? 'selected' : '' }}>Commodities</option>
-                                        <option value="insights" {{ $m->category === 'insights' ? 'selected' : '' }}>Insights</option>
-                                        <option value="company" {{ $m->category === 'company' ? 'selected' : '' }}>Company</option>
-                                        <option value="system" {{ $m->category === 'system' ? 'selected' : '' }}>System</option>
+                                        <option value="system" {{ $m->category === 'system' ? 'selected' : '' }}>System (Hidden)</option>
                                     </select>
-                                    <button type="submit" class="adm-btn adm-btn-primary adm-btn-sm" style="font-size: 11px; padding: 4px 8px;">Save</button>
                                 </div>
+                                <div style="margin-bottom: 8px; display: flex; flex-direction: column; gap: 4px; font-size: 11px;">
+                                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                        <input type="checkbox" name="is_public" value="1" {{ $m->is_public ? 'checked' : '' }}>
+                                        <span>Visible in Media Library</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                        <input type="checkbox" name="is_gallery" value="1" {{ $m->is_gallery ? 'checked' : '' }}>
+                                        <span style="color: var(--adm-primary, #3C8C2B); font-weight: 600;">Show in Public Gallery</span>
+                                    </label>
+                                </div>
+                                <button type="submit" class="adm-btn adm-btn-primary adm-btn-sm" style="font-size: 11px; padding: 4px 8px; width: 100%;">Save Changes</button>
                             </form>
                         </details>
 

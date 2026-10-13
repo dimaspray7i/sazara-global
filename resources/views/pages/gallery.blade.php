@@ -17,15 +17,18 @@
         <div class="gallery-tabs">
             @php
                 $locale = app()->getLocale();
-                $tabs = [
-                    'all'         => __('ui.gallery.all'),
-                    'commodities' => __('ui.gallery.commodities'),
-                    'insights'    => __('ui.gallery.insights'),
-                    'company'     => __('ui.gallery.company'),
-                ];
                 $currentCategory = $category ?? 'all';
+                $tabList = $categories ?? [
+                    'all'        => __('ui.gallery.all'),
+                    'logistics'  => __('ui.gallery.logistics'),
+                    'plantation' => __('ui.gallery.plantation'),
+                    'harvesting' => __('ui.gallery.harvesting'),
+                    'packaging'  => __('ui.gallery.packaging'),
+                    'export'     => __('ui.gallery.export'),
+                    'company'    => __('ui.gallery.company'),
+                ];
             @endphp
-            @foreach($tabs as $catKey => $catLabel)
+            @foreach($tabList as $catKey => $catLabel)
                 @php
                     $isActive = ($currentCategory === $catKey) || ($catKey === 'all' && empty($currentCategory));
                     $href = $catKey === 'all'

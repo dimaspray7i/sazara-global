@@ -12,7 +12,8 @@ class PublicGalleryController extends Controller
     {
         $category = $request->query('category');
 
-        $query = Media::public()->orderBy('sort_order', 'asc')->latest('id');
+        // Only show media explicitly marked as gallery items (is_gallery=true AND is_public=true)
+        $query = Media::gallery()->orderBy('sort_order', 'asc')->latest('id');
 
         if (filled($category) && $category !== 'all') {
             $query->where('category', $category);
@@ -20,11 +21,15 @@ class PublicGalleryController extends Controller
 
         $galleryItems = $query->paginate(12)->withQueryString();
 
+        // Gallery-specific activity categories
         $categories = [
-            'all'         => __('ui.gallery.all'),
-            'commodities' => __('ui.gallery.commodities'),
-            'insights'    => __('ui.gallery.insights'),
-            'company'     => __('ui.gallery.company'),
+            'all'        => __('ui.gallery.all'),
+            'logistics'  => __('ui.gallery.logistics'),
+            'plantation' => __('ui.gallery.plantation'),
+            'harvesting' => __('ui.gallery.harvesting'),
+            'packaging'  => __('ui.gallery.packaging'),
+            'export'     => __('ui.gallery.export'),
+            'company'    => __('ui.gallery.company'),
         ];
 
         $title = PageSection::get('gallery', 'header', 'title', __('ui.gallery.title'));

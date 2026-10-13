@@ -48,6 +48,9 @@ class MediaSeeder extends Seeder
                         'size'          => $file->getSize(),
                         'path'          => $targetPath,
                         'file_hash'     => $hash,
+                        'category'      => strtolower($category),
+                        'is_public'     => true,
+                        'is_gallery'    => false, // Never auto-include in Public Gallery
                         'alt'           => ucwords(str_replace(['-', '_', '.jpg', '.png'], ' ', $filename)),
                     ]
                 );
@@ -77,6 +80,9 @@ class MediaSeeder extends Seeder
                         'size'          => File::size($path),
                         'path'          => $targetPath,
                         'file_hash'     => $hash,
+                        'category'      => 'system',
+                        'is_public'     => true,
+                        'is_gallery'    => false, // Internal branding assets never in Gallery
                         'alt'           => $alt,
                     ]
                 );
