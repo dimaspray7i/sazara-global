@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Media;
+use App\Models\Gallery;
+use App\Models\GalleryCategory;
 use App\Models\PageSection;
 use Illuminate\Http\Request;
 
@@ -10,41 +11,64 @@ class PublicGalleryController extends Controller
 {
     public function index(Request $request)
     {
-        $category = $request->query('category');
+        $categorySlug = $request->query('category');
 
-        // Only show media explicitly marked as gallery items (is_gallery=true AND is_public=true)
-        // Deduplicate: If multiple rows share the same file_hash or path, pick the highest ID
-        $query = Media::gallery()
-            ->whereIn('id', function ($sub) {
-                $sub->selectRaw('MAX(id)')
-                    ->from('media')
-                    ->where('is_gallery', true)
-                    ->where('is_public', true)
-                    ->groupByRaw("COALESCE(NULLIF(file_hash, ''), path)");
-            })
+        $query = Gallery::with(['coverMedia', 'media'])
+            ->published()
             ->orderBy('sort_order', 'asc')
             ->latest('id');
 
-        if (filled($category) && $category !== 'all') {
-            $query->where('category', $category);
+        if (filled($categorySlug) && $categorySlug !== 'all') {
+            $query->where('category_slug', $categorySlug);
         }
 
-        $galleryItems = $query->paginate(12)->withQueryString();
+        $galleries = $query->paginate(12)->withQueryString();
 
-        // Gallery-specific activity categories
-        $categories = [
-            'all'        => __('ui.gallery.all'),
-            'logistics'  => __('ui.gallery.logistics'),
-            'plantation' => __('ui.gallery.plantation'),
-            'harvesting' => __('ui.gallery.harvesting'),
-            'packaging'  => __('ui.gallery.packaging'),
-            'export'     => __('ui.gallery.export'),
-            'company'    => __('ui.gallery.company'),
-        ];
+        // Dynamic categories from DB
+        $categories = GalleryCategory::active()->get();
 
         $title = PageSection::get('gallery', 'header', 'title', __('ui.gallery.title'));
         $sub   = PageSection::get('gallery', 'header', 'subtitle', __('ui.gallery.sub'));
 
-        return view('pages.gallery', compact('galleryItems', 'categories', 'category', 'title', 'sub'));
+        return view('pages.gallery', compact('galleries', 'categories', 'categorySlug', 'title', 'sub'));
+    }
+
+    /** Detail page / media JSON for lightbox (AJAX or direct) */
+    public function show(Request $request, string $locale, $gallery)
+    {
+        if (! ($gallery instanceof Gallery)) {
+            $gallery = Gallery::findOrFail($gallery);
+        }
+
+        // Only show published galleries publicly
+        abort_unless($gallery->isPublished(), 404);
+
+        $gallery->load('media');
+
+        $locale = app()->getLocale();
+        $data = [
+            'id'          => $gallery->id,
+            'title'       => $gallery->tr('title'),
+            'description' => $gallery->tr('description'),
+            'type'        => $gallery->type,
+            'category'    => $gallery->category?->name,
+            'media'       => $gallery->media->map(function ($m) {
+                return [
+                    'id'        => $m->id,
+                    'url'       => $m->url(),
+                    'mime_type' => $m->mime_type,
+                    'title'     => $m->tr('title'),
+                    'caption'   => $m->tr('caption'),
+                    'is_video'  => str_starts_with($m->mime_type, 'video/'),
+                ];
+            }),
+        ];
+
+        if ($request->wantsJson() || $request->ajax() || $request->boolean('json') || $request->header('X-Requested-With') === 'XMLHttpRequest' || $request->query('format') === 'json') {
+            return response()->json($data);
+        }
+
+        // If accessed directly without JS, redirect to gallery index with hash
+        return redirect()->route('gallery.index', ['locale' => $locale, 'open' => $gallery->id]);
     }
 }

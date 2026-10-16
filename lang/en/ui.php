@@ -65,6 +65,8 @@ return [
         'lightbox_close' => 'Close',
         'prev' => 'Previous',
         'next' => 'Next',
+        'photos' => 'photos',
+        'items' => 'items',
         'seo_title' => 'Sazara Global | Gallery',
         'seo_desc' => 'Browse the Sazara Global commodity gallery — Palm Broom, CPO, Coffee, Clove, Cinnamon, Vanilla, and more from Indonesia.',
     ],

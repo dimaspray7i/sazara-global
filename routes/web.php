@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\GalleryController as AdminGalleryController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\PageSectionController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
@@ -183,6 +184,7 @@ Route::prefix('{locale}')
     Route::get('/terms',   fn () => view('pages.terms')  )->name('terms');
 
     Route::get('/gallery', [PublicGalleryController::class, 'index'])->name('gallery.index');
+    Route::get('/gallery/{gallery}', [PublicGalleryController::class, 'show'])->name('gallery.show');
 
     Route::get('/search', [PublicSearchController::class, 'search'])->name('search');
     Route::get('/api/search', [PublicSearchController::class, 'search'])->name('search.ajax');
@@ -232,12 +234,30 @@ Route::prefix('admin')->middleware(AdminAuth::class)->group(function () {
     Route::delete('/articles/{article}',   [AdminArticleController::class, 'destroy'])->name('admin.articles.destroy');
     Route::post('/articles/{article}/toggle', [AdminArticleController::class, 'toggle'])->name('admin.articles.toggle');
 
-    // Media / Gallery
+    // Media / Gallery (Media Library — individual file management)
     Route::get('/media',                    [MediaController::class, 'index'])->name('admin.media.index');
     Route::post('/media',                   [MediaController::class, 'store'])->name('admin.media.store');
     Route::put('/media/{medium}',           [MediaController::class, 'update'])->name('admin.media.update');
     Route::post('/media/{medium}/toggle',   [MediaController::class, 'toggle'])->name('admin.media.toggle');
     Route::delete('/media/{medium}',        [MediaController::class, 'destroy'])->name('admin.media.destroy');
+
+    // Gallery (grouped gallery items with full lifecycle)
+    Route::get('/gallery',                                          [AdminGalleryController::class, 'index'])->name('admin.gallery.index');
+    Route::get('/gallery/create',                                   [AdminGalleryController::class, 'create'])->name('admin.gallery.create');
+    Route::post('/gallery',                                         [AdminGalleryController::class, 'store'])->name('admin.gallery.store');
+    Route::get('/gallery/{gallery}/edit',                           [AdminGalleryController::class, 'edit'])->name('admin.gallery.edit');
+    Route::put('/gallery/{gallery}',                                [AdminGalleryController::class, 'update'])->name('admin.gallery.update');
+    Route::delete('/gallery/{gallery}',                             [AdminGalleryController::class, 'destroy'])->name('admin.gallery.destroy');
+    Route::post('/gallery/{gallery}/toggle',                        [AdminGalleryController::class, 'toggle'])->name('admin.gallery.toggle');
+    Route::delete('/gallery/{gallery}/media/{media}',               [AdminGalleryController::class, 'removeMedia'])->name('admin.gallery.removeMedia');
+    Route::post('/gallery/{gallery}/cover',                         [AdminGalleryController::class, 'setCover'])->name('admin.gallery.setCover');
+    Route::post('/gallery/{gallery}/reorder',                       [AdminGalleryController::class, 'reorder'])->name('admin.gallery.reorder');
+
+    // Gallery Categories
+    Route::get('/gallery-categories',                               [AdminGalleryController::class, 'categories'])->name('admin.gallery.categories');
+    Route::post('/gallery-categories',                              [AdminGalleryController::class, 'storeCategory'])->name('admin.gallery.categories.store');
+    Route::put('/gallery-categories/{category}',                    [AdminGalleryController::class, 'updateCategory'])->name('admin.gallery.categories.update');
+    Route::delete('/gallery-categories/{category}',                 [AdminGalleryController::class, 'destroyCategory'])->name('admin.gallery.categories.destroy');
 
     // Pages / Content
     Route::get('/pages',        [PageSectionController::class, 'index'])->name('admin.pages.index');

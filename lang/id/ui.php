@@ -65,6 +65,8 @@ return [
         'lightbox_close' => 'Tutup',
         'prev' => 'Sebelumnya',
         'next' => 'Berikutnya',
+        'photos' => 'foto',
+        'items' => 'item',
         'seo_title' => 'Sazara Global | Galeri',
         'seo_desc' => 'Jelajahi galeri komoditas Sazara Global — Palm Broom, CPO, Kopi, Cengkeh, Kayu Manis, Vanili, dan lebih banyak lagi dari Indonesia.',
     ],

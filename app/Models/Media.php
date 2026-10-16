@@ -40,24 +40,41 @@ class Media extends Model
         return filled($cat) ? $q->where('category', $cat) : $q;
     }
 
+    public static function isFilenameLike(?string $str): bool
+    {
+        if (blank($str)) {
+            return false;
+        }
+        if (preg_match('/^(WhatsApp|IMG|VID|DSC|PXL|DJI|screenshot|screen_shot|photo)[_\s-]/i', $str)) {
+            return true;
+        }
+        if (preg_match('/\.(jpe?g|png|webp|gif|mp4|mov|avi|wmv)$/i', $str)) {
+            return true;
+        }
+        return false;
+    }
+
     /** Multilingual field accessor with English fallback */
     public function tr(string $field): string
     {
         $locale = app()->getLocale();
+        $val = '';
         if ($locale === 'id') {
             $column = $field . '_id';
             if (filled($this->$column)) {
-                return $this->$column;
+                $val = $this->$column;
             }
         }
-        $fallback = '';
-        if (filled($this->$field)) {
-            $fallback = $this->$field;
-        } elseif ($field === 'title' || $field === 'alt') {
-            $fallback = ucwords(str_replace(['-', '_', '.jpg', '.png', '.webp'], ' ', $this->original_name));
+        if (blank($val) && filled($this->$field)) {
+            $val = $this->$field;
         }
 
-        return \App\Services\TranslationService::get('media', $this->id, $field, $fallback, $locale);
+        // Never leak filename-like titles to public
+        if ($field === 'title' && (self::isFilenameLike($val) || $val === pathinfo($this->original_name ?? '', PATHINFO_FILENAME))) {
+            return '';
+        }
+
+        return \App\Services\TranslationService::get('media', $this->id, $field, $val, $locale);
     }
 
     /** Full public URL for the image */

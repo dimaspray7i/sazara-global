@@ -98,7 +98,16 @@
                 @foreach($media as $m)
                     <div class="adm-media-item" style="cursor: default; position: relative;">
                         <div class="adm-media-thumb-wrap">
-                            <img class="adm-media-thumb" src="{{ $m->url() }}" alt="{{ $m->title ?: 'Media image' }}" width="220" height="165" loading="lazy">
+                            @if(str_starts_with($m->mime_type ?? '', 'video/'))
+                                <div style="position:relative;width:100%;height:100%;min-height:120px;background:#000;border-radius:4px;overflow:hidden;cursor:pointer;" onclick="playAdminVideo('{{ $m->url() }}')">
+                                    <video src="{{ $m->url() }}" style="width:100%;height:100%;object-fit:cover;display:block;" muted preload="metadata"></video>
+                                    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);" title="Click to play video">
+                                        <svg viewBox="0 0 24 24" fill="white" width="36" height="36"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                    </div>
+                                </div>
+                            @else
+                                <img class="adm-media-thumb" src="{{ $m->url() }}" alt="{{ $m->title ?: 'Media image' }}" width="220" height="165" loading="lazy">
+                            @endif
                             <div class="adm-media-top-badge" style="display: flex; gap: 4px; flex-direction: column; align-items: flex-end;">
                                 <form method="POST" action="{{ route('admin.media.toggle', $m) }}" style="display:inline;">
                                     @csrf
@@ -186,9 +195,41 @@
             <div class="adm-empty">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                 <div class="adm-empty-title">No media files found</div>
-                <p>Upload your first image above to build your media library.</p>
             </div>
         @endif
     </div>
 </div>
+
+{{-- Admin HTML5 Video Player Modal --}}
+<div id="adminVideoModal" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.85);align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)closeAdminVideo();">
+    <div style="position:relative;max-width:860px;width:100%;background:#000;border-radius:12px;overflow:hidden;box-shadow:0 12px 48px rgba(0,0,0,0.8);">
+        <button type="button" onclick="closeAdminVideo()" style="position:absolute;top:12px;right:12px;z-index:10;background:rgba(255,255,255,0.25);color:#fff;border:none;border-radius:50%;width:34px;height:34px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,0.4)'" onmouseout="this.style.background='rgba(255,255,255,0.25)'">✕</button>
+        <video id="adminModalVideoPlayer" controls playsinline style="width:100%;max-height:80vh;display:block;outline:none;background:#000;"></video>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+function playAdminVideo(url) {
+    const modal = document.getElementById('adminVideoModal');
+    const player = document.getElementById('adminModalVideoPlayer');
+    if (!modal || !player) return;
+    player.src = url;
+    modal.style.display = 'flex';
+    player.play().catch(e => console.log('Autoplay deferred:', e));
+}
+
+function closeAdminVideo() {
+    const modal = document.getElementById('adminVideoModal');
+    const player = document.getElementById('adminModalVideoPlayer');
+    if (!modal || !player) return;
+    try { player.pause(); player.src = ''; } catch(e){}
+    modal.style.display = 'none';
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeAdminVideo();
+});
+</script>
+@endpush
 @endsection

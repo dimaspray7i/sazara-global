@@ -325,5 +325,6 @@ $htmlDir = ($currentLanguage && $currentLanguage->isRtl()) ? 'rtl' : 'ltr';
         </form>
     </div>
 </div>
+@stack('scripts')
 </body>
 </html>
