@@ -103,13 +103,15 @@ class TranslationController extends Controller
         $queue  = $this->buildQueue();
         $offset = max(0, (int) $request->input("offset", 0));
         $total  = count($queue);
-        $batch  = array_slice($queue, $offset, self::BATCH_SIZE);
-
-        if (empty($batch)) {
+        if ($offset >= $total) {
             return response()->json([
-                "done" => true, "translated" => 0, "skipped" => 0, "failed" => 0,
-                "offset" => $offset, "total" => $total,
-                "message" => "All items already processed for [{$targetLang}].",
+                "done"       => true,
+                "translated" => 0,
+                "skipped"    => 0,
+                "failed"     => 0,
+                "offset"     => $total,
+                "total"      => $total,
+                "message"    => "All items already processed for [{$targetLang}].",
             ]);
         }
 
@@ -123,9 +125,15 @@ class TranslationController extends Controller
         $translated = 0;
         $skipped    = 0;
         $failed     = 0;
+        $batchLimit = self::BATCH_SIZE;
+        $processedThisBatch = 0;
+        $scanIndex  = $offset;
 
-        foreach ($batch as $item) {
-            $lookupKey = "{$item["type"]}|{$item["id"]}|{$item["field"]}";
+        while ($scanIndex < $total && $processedThisBatch < $batchLimit) {
+            $item = $queue[$scanIndex];
+            $scanIndex++;
+
+            $lookupKey = "{$item['type']}|{$item['id']}|{$item['field']}";
 
             // Already exists in DB — skip (preserve manual edits)
             if (array_key_exists($lookupKey, $existingKeys)) {
@@ -133,39 +141,41 @@ class TranslationController extends Controller
                 continue;
             }
 
-            $enText = (string) ($item["text"] ?? "");
+            $enText = (string) ($item['text'] ?? '');
 
-            // Dont translate: empty, too short, URL/email/number/brand
-            if ($enText === "" || $this->shouldSkip($enText)) {
+            // Don't translate: empty, too short, URL/email/number/brand
+            if ($enText === '' || $this->shouldSkip($enText)) {
                 $skipped++;
                 continue;
             }
 
-            // Truncate to API limit (no translation for content over limit; saves failed API call)
+            // Truncate to API limit
             $sendText = mb_substr($enText, 0, self::MAX_CHARS);
 
-            // Attempt translation with 1 retry on failure
-            $result = $this->translateWithRetry($sendText, "en", $targetLang);
+            // Attempt translation with retry on failure
+            $result = $this->translateWithRetry($sendText, 'en', $targetLang);
+            $processedThisBatch++;
 
             if ($result === null) {
-                // API hard-failed both attempts
+                // API hard-failed
                 $failed++;
                 continue;
             }
 
             if ($result === $sendText) {
-                // API returned source text unchanged = unsupported language pair or quota
+                // API returned source text unchanged (identical/proper noun) — save to avoid re-querying
+                ContentTranslation::set($item['type'], $item['id'], $item['field'], $targetLang, $result);
+                $existingKeys[$lookupKey] = true;
                 $skipped++;
                 continue;
             }
 
-            ContentTranslation::set($item["type"], $item["id"], $item["field"], $targetLang, $result);
+            ContentTranslation::set($item['type'], $item['id'], $item['field'], $targetLang, $result);
             $existingKeys[$lookupKey] = true;
             $translated++;
-            // No usleep — API latency itself is the natural throttle (~1s)
         }
 
-        $nextOffset = $offset + self::BATCH_SIZE;
+        $nextOffset = $scanIndex;
         $done       = $nextOffset >= $total;
 
         return response()->json([
@@ -182,21 +192,24 @@ class TranslationController extends Controller
     }
 
     /**
-     * Try translation once; on Throwable, wait 500ms and retry once.
-     * Returns null only if both attempts throw an exception.
-     * Returns $sendText (source) if API responds but returns unchanged text.
+     * Try translation once; on Throwable or null, wait 300ms and retry once.
+     * Returns null only if both attempts fail.
      */
     private function translateWithRetry(string $text, string $source, string $target): ?string
     {
         try {
+            $res = TranslationService::autoTranslate($text, $source, $target);
+            if ($res !== null) {
+                return $res;
+            }
+        } catch (\Throwable) {
+        }
+
+        usleep(300_000); // 300ms before retry
+        try {
             return TranslationService::autoTranslate($text, $source, $target);
         } catch (\Throwable) {
-            usleep(500_000); // 500ms before retry
-            try {
-                return TranslationService::autoTranslate($text, $source, $target);
-            } catch (\Throwable) {
-                return null;
-            }
+            return null;
         }
     }
 
@@ -333,7 +346,6 @@ class TranslationController extends Controller
         // Find current lang index
         $langIndex = array_search($currentLang, $langs);
         $offset    = (int) ($offsetData[$currentLang] ?? 0);
-        $batch     = array_slice($queue, $offset, self::BATCH_SIZE);
 
         // Load existing translations for current lang in one DB query
         $existingKeys = ContentTranslation::where('language', $currentLang)
@@ -345,8 +357,14 @@ class TranslationController extends Controller
         $translated = 0;
         $skipped    = 0;
         $failed     = 0;
+        $batchLimit = self::BATCH_SIZE;
+        $processedThisBatch = 0;
+        $scanIndex  = $offset;
 
-        foreach ($batch as $item) {
+        while ($scanIndex < $total && $processedThisBatch < $batchLimit) {
+            $item = $queue[$scanIndex];
+            $scanIndex++;
+
             $lookupKey = "{$item['type']}|{$item['id']}|{$item['field']}";
 
             // Already exists in DB — skip (preserve manual edits)
@@ -366,25 +384,29 @@ class TranslationController extends Controller
             // Truncate to API limit
             $sendText = mb_substr($enText, 0, self::MAX_CHARS);
 
-            // Attempt translation with 1 retry on failure
+            // Attempt translation with retry on failure
             $result = $this->translateWithRetry($sendText, 'en', $currentLang);
+            $processedThisBatch++;
 
             if ($result === null) {
                 $failed++;
                 continue;
             }
 
-            // API returned source text unchanged = unsupported pair or quota
+            // API returned source text unchanged (identical/proper noun) — save to avoid re-querying
             if ($result === $sendText) {
+                ContentTranslation::set($item['type'], $item['id'], $item['field'], $currentLang, $result);
+                $existingKeys[$lookupKey] = true;
                 $skipped++;
                 continue;
             }
 
             ContentTranslation::set($item['type'], $item['id'], $item['field'], $currentLang, $result);
+            $existingKeys[$lookupKey] = true;
             $translated++;
         }
 
-        $nextOffset = $offset + self::BATCH_SIZE;
+        $nextOffset = $scanIndex;
         $langDone   = $nextOffset >= $total;
 
         // Update offset state
@@ -430,8 +452,10 @@ class TranslationController extends Controller
         if (mb_strlen($text) <= 3) return true;
         if (filter_var($text, FILTER_VALIDATE_EMAIL)) return true;
         if (filter_var($text, FILTER_VALIDATE_URL)) return true;
-        if (preg_match("/^\+?[\d\s\-\(\)]{4,}$/", $text)) return true;
-        if (preg_match("/^(PT\s+)?Sazara(\s+Global(\s+Trade)?)?$/i", $text)) return true;
+        if (preg_match('/^\+?[\d\s\-\(\)]{4,}$/', $text)) return true;
+        if (preg_match('/^(PT\s+)?Sazara(\s+Global(\s+Trade)?)?$/i', $text)) return true;
+        if (preg_match('/\.(jpe?g|png|webp|gif|svg|ico)$/i', $text)) return true;
+        if (str_starts_with($text, '/') && !str_contains($text, ' ')) return true;
         return false;
     }
 }

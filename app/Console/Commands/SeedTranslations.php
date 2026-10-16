@@ -50,22 +50,18 @@ class SeedTranslations extends Command
             return self::SUCCESS;
         }
 
-        // Load UI keys from lang/en/ui.php
-        $enUi = [];
-        if (file_exists(lang_path('en/ui.php'))) {
-            $enUi = require lang_path('en/ui.php');
-        }
+        // Load full queue of translatable items (UI keys, products, articles, page_sections, gallery)
+        $queueController = new \App\Http\Controllers\Admin\TranslationController();
+        $queue = $queueController->buildQueue();
 
-        $keys = $this->flattenKeys($enUi);
-
-        if (empty($keys)) {
-            $this->error('Could not load lang/en/ui.php — no keys to translate.');
+        if (empty($queue)) {
+            $this->error('Translation queue is empty.');
             return self::FAILURE;
         }
 
         $this->info(sprintf(
-            'Translating %d UI keys for %d language(s): %s',
-            count($keys),
+            'Translating %d items across entire website for %d language(s): %s',
+            count($queue),
             count($langs),
             implode(', ', $langs)
         ));
@@ -81,8 +77,8 @@ class SeedTranslations extends Command
 
             // Load all existing keys for this language in one query
             $existingKeys = \App\Models\ContentTranslation::where('language', $lang)
-                ->where('content_type', 'ui')
-                ->pluck('content_id')
+                ->get(['content_type', 'content_id', 'field'])
+                ->map(fn($r) => "{$r->content_type}|{$r->content_id}|{$r->field}")
                 ->flip()
                 ->all();
 
@@ -91,10 +87,10 @@ class SeedTranslations extends Command
             $langFailed  = 0;
             $langStart   = time();
 
-            $bar = $this->output->createProgressBar(count($keys));
+            $bar = $this->output->createProgressBar(count($queue));
             $bar->start();
 
-            foreach ($keys as $key => $en) {
+            foreach ($queue as $item) {
                 // Check per-language time budget
                 if ((time() - $langStart) >= $langTimeout) {
                     $this->line('');
@@ -102,25 +98,29 @@ class SeedTranslations extends Command
                     break;
                 }
 
+                $lookupKey = "{$item['type']}|{$item['id']}|{$item['field']}";
+
                 // Already in DB — skip (preserve admin edits)
-                if (isset($existingKeys[$key])) {
+                if (isset($existingKeys[$lookupKey])) {
                     $langSkipped++;
                     $bar->advance();
                     continue;
                 }
 
+                $en = (string) ($item['text'] ?? '');
+
                 // Skip values that should not be translated
-                if ($this->shouldSkip($en)) {
+                if ($en === '' || $this->shouldSkip($en)) {
                     $langSkipped++;
                     $bar->advance();
                     continue;
                 }
 
                 try {
-                    $translated = TranslationService::autoTranslate($en, 'en', $lang);
+                    $translated = TranslationService::autoTranslate(mb_substr($en, 0, 500), 'en', $lang);
                     if (filled($translated) && $translated !== $en) {
-                        \App\Models\ContentTranslation::set('ui', $key, 'text', $lang, $translated);
-                        $existingKeys[$key] = true; // in-memory dedup for this loop
+                        \App\Models\ContentTranslation::set($item['type'], $item['id'], $item['field'], $lang, $translated);
+                        $existingKeys[$lookupKey] = true;
                         $langSeeded++;
                     } else {
                         $langSkipped++;
@@ -129,7 +129,7 @@ class SeedTranslations extends Command
                 } catch (\Throwable $e) {
                     $langFailed++;
                     $this->line('');
-                    $this->warn("  Failed [{$lang}] {$key}: " . $e->getMessage());
+                    $this->warn("  Failed [{$lang}] {$lookupKey}: " . $e->getMessage());
                 }
 
                 $bar->advance();
@@ -197,6 +197,8 @@ class SeedTranslations extends Command
         if (filter_var($text, FILTER_VALIDATE_URL)) return true;
         if (preg_match('/^\+?[\d\s\-\(\)]{4,}$/', $text)) return true;
         if (preg_match('/^(PT\s+)?Sazara(\s+Global(\s+Trade)?)?$/i', $text)) return true;
+        if (preg_match('/\.(jpe?g|png|webp|gif|svg|ico)$/i', $text)) return true;
+        if (str_starts_with($text, '/') && !str_contains($text, ' ')) return true;
         return false;
     }
 }

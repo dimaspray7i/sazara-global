@@ -66,21 +66,27 @@ class TranslationService
             return self::$runtimeCache[$cacheKey];
         }
 
-        // 1. Check persistent Cache / Database
-        $translated = Cache::remember($cacheKey, 86400, function () use ($contentType, $contentId, $field, $locale) {
-            return ContentTranslation::where('content_type', $contentType)
-                ->where('content_id', $contentId)
-                ->where('field', $field)
-                ->where('language', $locale)
-                ->value('value');
-        });
-
+        // 1. Check persistent Cache
+        $translated = Cache::get($cacheKey);
         if (filled($translated)) {
             self::$runtimeCache[$cacheKey] = $translated;
             return $translated;
         }
 
-        // 2. Auto-translate on the fly — only in console (artisan) context to avoid HTTP timeout.
+        // 2. Lookup from Database (never cache null!)
+        $dbTranslated = ContentTranslation::where('content_type', $contentType)
+            ->where('content_id', $contentId)
+            ->where('field', $field)
+            ->where('language', $locale)
+            ->value('value');
+
+        if (filled($dbTranslated)) {
+            Cache::put($cacheKey, $dbTranslated, 86400);
+            self::$runtimeCache[$cacheKey] = $dbTranslated;
+            return $dbTranslated;
+        }
+
+        // 3. Auto-translate on the fly — only in console (artisan) context to avoid HTTP timeout.
         // During web requests, if no DB translation found, fall back to original silently.
         $isConsole = app()->runningInConsole();
         if ($isConsole && filled($originalFallback) && config('sazara.auto_translate', true)) {
@@ -93,7 +99,7 @@ class TranslationService
             }
         }
 
-        // 3. Fallback to original
+        // 4. Fallback to original
         self::$runtimeCache[$cacheKey] = (string) $originalFallback;
         return (string) $originalFallback;
     }
@@ -118,7 +124,7 @@ class TranslationService
             // Google Translate API v2 (if key provided)
             if ($provider === 'google' && filled($apiKey)) {
                 $response = Http::withoutVerifying()
-                    ->timeout(4)
+                    ->timeout(10)
                     ->post('https://translation.googleapis.com/language/translate/v2', [
                         'q'      => $text,
                         'source' => $sourceCode,
@@ -137,7 +143,7 @@ class TranslationService
             $langpair = "{$sourceCode}|{$targetCode}";
 
             $response = Http::withoutVerifying()
-                ->timeout(4)
+                ->timeout(10)
                 ->get('https://api.mymemory.translated.net/get', [
                     'q'        => mb_substr($text, 0, 500),
                     'langpair' => $langpair,
@@ -154,7 +160,7 @@ class TranslationService
             Log::warning("Auto-translation failed for target [{$target}]: " . $e->getMessage());
         }
 
-        return $text;
+        return null;
     }
 
     /**

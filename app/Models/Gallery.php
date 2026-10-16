@@ -65,7 +65,7 @@ class Gallery extends Model
 
     // ── Helpers ──────────────────────────────────────────────────────
 
-    /** Multilingual title */
+    /** Multilingual title/description */
     public function tr(string $field): string
     {
         $locale = app()->getLocale();
@@ -73,7 +73,8 @@ class Gallery extends Model
             $col = $field . '_id';
             if (filled($this->$col)) return $this->$col;
         }
-        return (string) ($this->$field ?? '');
+        $fallback = (string) ($this->$field ?? '');
+        return \App\Services\TranslationService::get('gallery', $this->id, $field, $fallback, $locale);
     }
 
     /** Cover URL: use cover_media, or first media, or placeholder */
