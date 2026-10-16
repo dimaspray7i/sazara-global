@@ -197,6 +197,9 @@
 @endsection
 
 @push('scripts')
+<!-- Load SweetAlert2 untuk Modal Konfirmasi Modern -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
 function startBatchTranslate(btn) {
     const lang     = btn.dataset.lang;
@@ -206,88 +209,143 @@ function startBatchTranslate(btn) {
     const label    = document.getElementById('btn-label-auto');
     const prog     = document.getElementById('translate-progress') || document.getElementById('translate-progress-empty');
 
-    if (! confirm('Auto-translate all missing items for ' + langName + '?\n\nRuns in small batches (~5 items each). Existing manual translations will NOT be overwritten.')) {
-        return;
-    }
+    // GANTI CONFIRM BAWAAN BROWSER DENGAN SWEETALERT2 YANG MODERN
+    Swal.fire({
+        title: 'Konfirmasi Auto-Translate',
+        html: `
+            <p style="text-align: left; margin-bottom: 15px;">
+                Apakah Anda ingin menerjemahkan semua item yang hilang untuk bahasa <strong>${langName}</strong>?
+            </p>
+            <ul style="text-align: left; font-size: 13px; color: #4b5563; padding-left: 20px;">
+                <li>Proses berjalan bertahap (~5 item per permintaan) agar server tidak overload.</li>
+                <li>Terjemahan yang sudah diisi manual <strong>TIDAK AKAN</strong> tertimpa.</li>
+                <li>Pastikan koneksi internet stabil selama proses berlangsung.</li>
+            </ul>
+        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#2563eb', // Warna biru modern (sesuaikan dengan tema admin)
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Ya, Mulai Terjemahkan',
+        cancelButtonText: 'Batal',
+        reverseButtons: true,
+        customClass: {
+            popup: 'rounded-xl shadow-2xl',
+            confirmButton: 'rounded-lg px-4 py-2 font-semibold',
+            cancelButton: 'rounded-lg px-4 py-2 font-semibold'
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Jalankan proses jika user klik "Ya"
+            runTranslationProcess();
+        }
+    });
 
-    btn.disabled = true;
-    if (label) label.textContent = 'Translating…';
-    if (prog)  { prog.style.display = 'inline'; prog.textContent = 'Starting…'; }
+    function runTranslationProcess() {
+        btn.disabled = true;
+        btn.style.opacity = '0.7';
+        if (label) label.textContent = 'Menerjemahkan…';
+        if (prog)  { 
+            prog.style.display = 'inline'; 
+            prog.textContent = '🔄 Memulai proses...'; 
+            prog.style.background = '#dbeafe'; 
+            prog.style.color = '#1e40af'; 
+        }
 
-    let offset      = 0;
-    let totTranslated = 0;
-    let totSkipped    = 0;
-    let totFailed     = 0;
-    let retryCount    = 0;
-    const MAX_RETRIES = 2;
+        let offset      = 0;
+        let totTranslated = 0;
+        let totSkipped    = 0;
+        let totFailed     = 0;
+        let retryCount    = 0;
+        const MAX_RETRIES = 2;
 
-    function updateProgress(current, total) {
-        if (!prog) return;
-        const pct = total > 0 ? Math.min(100, Math.round((current / total) * 100)) : 0;
-        prog.textContent = pct + '% (' + current + '/' + (total || '?') + ') — '
-            + totTranslated + ' translated'
-            + (totSkipped > 0 ? ', ' + totSkipped + ' skipped' : '')
-            + (totFailed  > 0 ? ', ' + totFailed  + ' failed'  : '');
-    }
+        function updateProgress(current, total) {
+            if (!prog) return;
+            const pct = total > 0 ? Math.min(100, Math.round((current / total) * 100)) : 0;
+            prog.textContent = `🔄 ${pct}% (${current}/${(total || '?')}) — ${totTranslated} diterjemahkan${totSkipped > 0 ? ', ' + totSkipped + ' dilewati' : ''}${totFailed > 0 ? ', ' + totFailed + ' gagal' : ''}`;
+        }
 
-    function runBatch() {
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrf,
-                'Accept': 'application/json',
-            },
-            body: JSON.stringify({ target_lang: lang, offset: offset }),
-        })
-        .then(r => {
-            if (!r.ok) throw new Error('HTTP ' + r.status);
-            return r.json();
-        })
-        .then(data => {
-            retryCount = 0; // reset on success
-            totTranslated += (data.translated || 0);
-            totSkipped    += (data.skipped    || 0);
-            totFailed     += (data.failed     || 0);
-            // Server always returns next offset; fallback to +5 if missing
-            offset = (typeof data.offset === 'number') ? data.offset : (offset + 5);
+        function runBatch() {
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrf,
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ target_lang: lang, offset: offset }),
+            })
+            .then(r => {
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                return r.json();
+            })
+            .then(data => {
+                retryCount = 0;
+                totTranslated += (data.translated || 0);
+                totSkipped    += (data.skipped    || 0);
+                totFailed     += (data.failed     || 0);
+                offset = (typeof data.offset === 'number') ? data.offset : (offset + 5);
 
-            updateProgress(offset, data.total || 0);
+                updateProgress(offset, data.total || 0);
 
-            if (data.done) {
-                if (label) label.textContent = '✓ Done';
-                if (prog)  prog.textContent = '✓ Done — ' + totTranslated + ' translated, '
-                    + totSkipped + ' skipped, ' + totFailed + ' failed. Reloading…';
-                btn.disabled = false;
-                setTimeout(() => location.reload(), 2500);
-            } else {
-                setTimeout(runBatch, 300);
-            }
-        })
-        .catch(err => {
-            retryCount++;
-            if (retryCount <= MAX_RETRIES) {
-                if (prog) prog.textContent = 'Retrying batch at ' + offset + '… (attempt ' + retryCount + ')';
-                setTimeout(runBatch, 2000 * retryCount);
-            } else {
-                if (prog) prog.textContent = '⚠ Error at offset ' + offset + ': ' + err.message
-                    + ' — Click ⚡ Retry to continue from here.';
-                btn.disabled = false;
-                btn.dataset.offset = offset; // save resume point
-                if (label) label.textContent = '⚡ Retry';
-                btn.onclick = function() { offset = parseInt(btn.dataset.offset || 0); retryCount = 0; startResume(btn); };
-            }
-        });
-    }
+                if (data.done) {
+                    if (label) label.textContent = '✓ Selesai';
+                    if (prog)  {
+                        prog.style.background = '#d1fae5';
+                        prog.style.color = '#065f46';
+                        prog.textContent = `✅ Selesai — ${totTranslated} diterjemahkan, ${totSkipped} dilewati, ${totFailed} gagal. Halaman akan dimuat ulang...`;
+                    }
+                    
+                    // Tampilkan notifikasi sukses yang cantik
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: `${totTranslated} item berhasil diterjemahkan.`,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
 
-    function startResume(b) {
-        b.disabled = true;
-        if (label) label.textContent = 'Translating…';
-        retryCount = 0;
+                    btn.style.opacity = '1';
+                    setTimeout(() => location.reload(), 2500);
+                } else {
+                    setTimeout(runBatch, 300);
+                }
+            })
+            .catch(err => {
+                retryCount++;
+                if (retryCount <= MAX_RETRIES) {
+                    if (prog) prog.textContent = `🔄 Mencoba ulang batch di ${offset}… (percobaan ${retryCount})`;
+                    setTimeout(runBatch, 2000 * retryCount);
+                } else {
+                    if (prog) {
+                        prog.style.background = '#fee2e2';
+                        prog.style.color = '#991b1b';
+                        prog.textContent = `⚠ Gagal di offset ${offset}: ${err.message} — Klik tombol untuk melanjutkan.`;
+                    }
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.dataset.offset = offset;
+                    if (label) label.textContent = '⚡ Coba Lagi';
+                    btn.onclick = function() { 
+                        offset = parseInt(btn.dataset.offset || 0); 
+                        retryCount = 0; 
+                        Swal.fire({
+                            title: 'Lanjutkan Proses?',
+                            text: 'Proses sebelumnya terhenti. Ingin melanjutkan dari titik terakhir?',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: 'Lanjutkan',
+                            cancelButtonText: 'Batal'
+                        }).then((res) => {
+                            if(res.isConfirmed) runTranslationProcess();
+                        });
+                    };
+                }
+            });
+        }
+
         runBatch();
     }
-
-    runBatch();
 }
 </script>
 @endpush
