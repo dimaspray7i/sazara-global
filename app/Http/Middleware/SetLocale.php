@@ -18,6 +18,19 @@ class SetLocale
             $supported = ['en', 'id'];
         }
 
+        // Admin routes default to English and do not automatically inherit public session locale
+        if ($request->is('admin*') || $segment === 'admin' || $segment === 'login-sazara') {
+            $adminLocale = $request->query('admin_lang', session('admin_locale', 'en'));
+            if (! in_array($adminLocale, $supported, true)) {
+                $adminLocale = 'en';
+            }
+            if ($request->has('admin_lang')) {
+                session(['admin_locale' => $adminLocale]);
+            }
+            app()->setLocale($adminLocale);
+            return $next($request);
+        }
+
         if (in_array($segment, $supported, true)) {
             $locale = $segment;
             session(['locale' => $locale]);

@@ -372,13 +372,14 @@ class GalleryController extends Controller
             'sort_order' => ['nullable', 'integer'],
         ]);
 
-        GalleryCategory::create([
+        $cat = GalleryCategory::create([
             'name'       => $request->name,
             'name_id'    => $request->name_id,
             'slug'       => $request->slug,
             'sort_order' => $request->sort_order ?? 0,
             'is_active'  => true,
         ]);
+        $cat->syncTranslations();
 
         return back()->with('success', 'Category "' . $request->name . '" added.');
     }
@@ -398,6 +399,7 @@ class GalleryController extends Controller
             'sort_order' => $request->sort_order ?? $category->sort_order,
             'is_active'  => $request->has('is_active'),
         ]);
+        $category->syncTranslations();
 
         if ($request->wantsJson()) return response()->json(['success' => true]);
         return back()->with('success', 'Category updated.');

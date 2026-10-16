@@ -273,8 +273,152 @@ class TranslationController extends Controller
             }
         }
 
+        // Gallery Categories
+        foreach (\App\Models\GalleryCategory::where('is_active', true)->get(['id', 'slug', 'name']) as $cat) {
+            if (filled($cat->name)) {
+                $queue[] = ['type' => 'gallery_category', 'id' => (string) $cat->id, 'field' => 'name', 'text' => $cat->name];
+                $queue[] = ['type' => 'gallery_category', 'id' => $cat->slug, 'field' => 'name', 'text' => $cat->name];
+            }
+        }
+
+        // Galleries (title + description)
+        foreach (\App\Models\Gallery::where('status', 'published')->get(['id', 'title', 'description']) as $g) {
+            foreach (['title', 'description'] as $field) {
+                $val = (string) ($g->$field ?? '');
+                if ($val !== '') {
+                    $queue[] = ['type' => 'gallery', 'id' => (string) $g->id, 'field' => $field, 'text' => $val];
+                }
+            }
+        }
+
         $cache = $queue;
         return $cache;
+    }
+
+    /**
+     * Sync all active non-static languages in one stateless round-robin flow.
+     *
+     * POST params (JSON):
+     *   offset_data   object  — per-language offsets, e.g. {"zh": 45, "ja": 0, ...}
+     *   current_lang  string  — language code being processed in this batch
+     *
+     * JSON response:
+     *   done, lang, next_lang, lang_done, offset_data, translated, skipped, failed,
+     *   offset, total, total_langs, lang_index, message
+     */
+    public function syncAllLanguages(Request $request)
+    {
+        $langs = Language::where('is_active', true)
+            ->whereNotIn('code', ['en', 'id'])
+            ->orderBy('sort_order')
+            ->pluck('code')
+            ->toArray();
+
+        if (empty($langs)) {
+            return response()->json(['done' => true, 'message' => 'No non-static languages to sync.']);
+        }
+
+        $queue = $this->buildQueue();
+        $total = count($queue);
+
+        // State from client
+        $offsetData  = $request->input('offset_data', []); // {'zh': 45, 'ja': 0, ...}
+        $currentLang = $request->input('current_lang', $langs[0]);
+
+        // Validate currentLang is in list
+        if (!in_array($currentLang, $langs)) {
+            $currentLang = $langs[0];
+        }
+
+        // Find current lang index
+        $langIndex = array_search($currentLang, $langs);
+        $offset    = (int) ($offsetData[$currentLang] ?? 0);
+        $batch     = array_slice($queue, $offset, self::BATCH_SIZE);
+
+        // Load existing translations for current lang in one DB query
+        $existingKeys = ContentTranslation::where('language', $currentLang)
+            ->get(['content_type', 'content_id', 'field'])
+            ->map(fn($r) => "{$r->content_type}|{$r->content_id}|{$r->field}")
+            ->flip()
+            ->all();
+
+        $translated = 0;
+        $skipped    = 0;
+        $failed     = 0;
+
+        foreach ($batch as $item) {
+            $lookupKey = "{$item['type']}|{$item['id']}|{$item['field']}";
+
+            // Already exists in DB — skip (preserve manual edits)
+            if (array_key_exists($lookupKey, $existingKeys)) {
+                $skipped++;
+                continue;
+            }
+
+            $enText = (string) ($item['text'] ?? '');
+
+            // Don't translate: empty, too short, URL/email/number/brand
+            if ($enText === '' || $this->shouldSkip($enText)) {
+                $skipped++;
+                continue;
+            }
+
+            // Truncate to API limit
+            $sendText = mb_substr($enText, 0, self::MAX_CHARS);
+
+            // Attempt translation with 1 retry on failure
+            $result = $this->translateWithRetry($sendText, 'en', $currentLang);
+
+            if ($result === null) {
+                $failed++;
+                continue;
+            }
+
+            // API returned source text unchanged = unsupported pair or quota
+            if ($result === $sendText) {
+                $skipped++;
+                continue;
+            }
+
+            ContentTranslation::set($item['type'], $item['id'], $item['field'], $currentLang, $result);
+            $translated++;
+        }
+
+        $nextOffset = $offset + self::BATCH_SIZE;
+        $langDone   = $nextOffset >= $total;
+
+        // Update offset state
+        $offsetData[$currentLang] = $nextOffset;
+
+        // Determine next language
+        $nextLang = $currentLang;
+        $allDone  = false;
+
+        if ($langDone) {
+            $nextIndex = $langIndex + 1;
+            if ($nextIndex >= count($langs)) {
+                $allDone  = true;
+                $nextLang = null;
+            } else {
+                $nextLang = $langs[$nextIndex];
+            }
+        }
+
+        return response()->json([
+            'done'        => $allDone,
+            'lang'        => $currentLang,
+            'next_lang'   => $nextLang,
+            'lang_done'   => $langDone,
+            'offset_data' => $offsetData,
+            'translated'  => $translated,
+            'skipped'     => $skipped,
+            'failed'      => $failed,
+            'offset'      => $nextOffset,
+            'total'       => $total,
+            'total_langs' => count($langs),
+            'lang_index'  => $langIndex,
+            'message'     => $allDone ? 'All languages synced!' : "Lang [{$currentLang}]: batch {$nextOffset}/{$total}",
+        ]);
     }
 
     /**

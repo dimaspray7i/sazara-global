@@ -51,7 +51,7 @@ class PublicGalleryController extends Controller
             'title'       => $gallery->tr('title'),
             'description' => $gallery->tr('description'),
             'type'        => $gallery->type,
-            'category'    => $gallery->category?->name,
+            'category'    => $gallery->category?->label(),
             'media'       => $gallery->media->map(function ($m) {
                 return [
                     'id'        => $m->id,

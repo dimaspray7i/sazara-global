@@ -58,6 +58,8 @@ return [
         'packaging' => 'Quality & Packaging',
         'export' => 'Export & Loading',
         'company' => 'Company & Field Visits',
+        'warehouse' => 'Warehouse & Storage',
+        'inspection' => 'Inspection & QC',
         'commodities' => 'Commodities',
         'insights' => 'Operations',
         'system' => 'System',

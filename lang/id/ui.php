@@ -58,6 +58,8 @@ return [
         'packaging' => 'Sortasi & Pengemasan',
         'export' => 'Ekspor & Loading',
         'company' => 'Aktivitas Perusahaan',
+        'warehouse' => 'Gudang & Penyimpanan',
+        'inspection' => 'Inspeksi & Kontrol Mutu',
         'commodities' => 'Komoditas',
         'insights' => 'Operasional',
         'system' => 'Sistem',

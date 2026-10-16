@@ -90,11 +90,11 @@
                         </div>
                         <div style="display:flex;gap:8px;">
                             <button type="submit" class="adm-btn adm-btn-primary adm-btn-sm">Save</button>
-                            <form method="POST" action="{{ route('admin.gallery.categories.destroy', $cat) }}" onsubmit="return confirm('Delete category \'{{ addslashes($cat->name) }}\'? Galleries using this category will have their category cleared.')" style="display:inline;">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="adm-btn adm-btn-outline adm-btn-sm" style="color:#e53e3e;border-color:#e53e3e;">Delete</button>
-                            </form>
+                            <button type="submit" form="delete-cat-{{ $cat->id }}" class="adm-btn adm-btn-outline adm-btn-sm" style="color:#e53e3e;border-color:#e53e3e;">Delete</button>
                         </div>
+                    </form>
+                    <form id="delete-cat-{{ $cat->id }}" method="POST" action="{{ route('admin.gallery.categories.destroy', $cat) }}" onsubmit="return confirm('Delete category \'{{ addslashes($cat->name) }}\'? Galleries using this category will have their category cleared.')" style="display:none;">
+                        @csrf @method('DELETE')
                     </form>
                 </details>
             @empty

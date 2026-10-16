@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             PageSectionSeeder::class,        // 6. CMS page sections
             MediaSeeder::class,              // 7. Media (scans physical files)
             ContentTranslationSeeder::class, // 8. Indonesian translations from existing _id columns
+            GalleryCategorySeeder::class,    // 9. Gallery categories
         ]);
     }
 }

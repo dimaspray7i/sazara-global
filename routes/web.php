@@ -275,4 +275,5 @@ Route::prefix('admin')->middleware(AdminAuth::class)->group(function () {
     Route::post('/languages/{language}/toggle',       [\App\Http\Controllers\Admin\TranslationController::class, 'toggleLanguage'])->name('admin.languages.toggle');
     Route::put('/translations/{translation}',         [\App\Http\Controllers\Admin\TranslationController::class, 'updateTranslation'])->name('admin.translations.update');
     Route::post('/translations/auto-translate',       [\App\Http\Controllers\Admin\TranslationController::class, 'autoTranslateMissing'])->name('admin.translations.auto');
+    Route::post('/translations/sync-all',             [\App\Http\Controllers\Admin\TranslationController::class, 'syncAllLanguages'])->name('admin.translations.sync-all');
 });
