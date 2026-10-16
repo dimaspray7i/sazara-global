@@ -325,18 +325,19 @@ html[data-theme="light"] .btn-primary {
 .main-nav ul {
   display: flex;
   align-items: center;
-  gap: 26px;
+  gap: 20px;
 }
 
 .main-nav a {
   font-family: var(--body);
   font-weight: 600;
-  font-size: 14.5px;
+  font-size: 14px;
   color: var(--text-primary);
   padding: 6px 0;
   position: relative;
   transition: color var(--transition);
   display: inline-block;
+  white-space: nowrap;
 }
 
 .main-nav a::after {

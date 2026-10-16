@@ -142,6 +142,7 @@ $htmlDir = ($currentLanguage && $currentLanguage->isRtl()) ? 'rtl' : 'ltr';
                 <li><a class="{{ request()->routeIs('products.*') ? 'active' : '' }}" href="{{ route('products.index', ['locale' => app()->getLocale()]) }}">{{ __('ui.nav.product') }}</a></li>
                 <li><a class="{{ request()->routeIs('articles.*') ? 'active' : '' }}" href="{{ route('articles.index', ['locale' => app()->getLocale()]) }}">{{ __('ui.nav.article') }}</a></li>
                 <li><a class="{{ request()->routeIs('gallery.*') ? 'active' : '' }}" href="{{ route('gallery.index', ['locale' => app()->getLocale()]) }}">{{ __('ui.nav.gallery') }}</a></li>
+                <li><a class="{{ request()->routeIs('terms') ? 'active' : '' }}" href="{{ route('terms', ['locale' => app()->getLocale()]) }}">{{ __('ui.nav.terms') }}</a></li>
                 <li><a class="{{ request()->routeIs('about') ? 'active' : '' }}" href="{{ route('about', ['locale' => app()->getLocale()]) }}">{{ __('ui.nav.about') }}</a></li>
                 <li><a class="{{ request()->routeIs('contact') ? 'active' : '' }}" href="{{ route('contact', ['locale' => app()->getLocale()]) }}">{{ __('ui.nav.contact') }}</a></li>
             </ul>
@@ -250,6 +251,7 @@ $htmlDir = ($currentLanguage && $currentLanguage->isRtl()) ? 'rtl' : 'ltr';
                 <li><a href="{{ route('products.index', ['locale' => app()->getLocale()]) }}">{{ __('ui.nav.product') }}</a></li>
                 <li><a href="{{ route('articles.index', ['locale' => app()->getLocale()]) }}">{{ __('ui.nav.article') }}</a></li>
                 <li><a href="{{ route('gallery.index', ['locale' => app()->getLocale()]) }}">{{ __('ui.nav.gallery') }}</a></li>
+                <li><a href="{{ route('terms', ['locale' => app()->getLocale()]) }}">{{ __('ui.nav.terms') }}</a></li>
                 <li><a href="{{ route('about', ['locale' => app()->getLocale()]) }}">{{ __('ui.nav.about') }}</a></li>
                 <li><a href="{{ route('contact', ['locale' => app()->getLocale()]) }}">{{ __('ui.nav.contact') }}</a></li>
             </ul>

@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'nav' => ['home' => 'Home', 'product' => 'Product', 'article' => 'Article', 'about' => 'About Us', 'contact' => 'Contact Us', 'gallery' => 'Gallery'],
+    'nav' => ['home' => 'Home', 'product' => 'Product', 'article' => 'Article', 'about' => 'About Us', 'contact' => 'Contact Us', 'gallery' => 'Gallery', 'terms' => 'Terms & Conditions'],
     'common' => [
         'view_products' => 'View Products', 'get_offer' => 'Get Offer', 'learn_more' => 'Learn More',
         'read_more' => 'Read More', 'chat_wa' => 'Chat on WhatsApp', 'back_products' => 'Back to Products',
@@ -58,6 +58,9 @@ return [
         'packaging' => 'Quality & Packaging',
         'export' => 'Export & Loading',
         'company' => 'Company & Field Visits',
+        'commodities' => 'Commodities',
+        'insights' => 'Operations',
+        'system' => 'System',
         'empty' => 'No activity documentation available in this category yet.',
         'lightbox_close' => 'Close',
         'prev' => 'Previous',
@@ -154,5 +157,25 @@ return [
         'lc_name'        => 'Letter of Credit',
         'lc_desc'        => 'Secure commercial letter of credit issued by an international prime bank.',
         'back'           => 'Back to Home',
+        // Backward compatibility for any cached or legacy references
+        'effective'      => 'Commercial Agreement',
+        'effective_date' => 'Subject to contract',
+        'intro'          => 'International commercial terms and flexible payment options provided by PT Sazara Global Trade.',
+        's1_title'       => 'Incoterms (FOB, CFR, CIF)',
+        's1_body'        => 'Standard shipment conditions adaptable to destination and buyer specifications.',
+        's2_title'       => 'Payment Terms (T/T, L/C)',
+        's2_body'        => 'Telegraphic transfer and documentary letter of credit options.',
+        's3_title'       => 'Quality & Specification',
+        's3_body'        => 'Commitment to agreed product standards and transparent inspection.',
+        's4_title'       => 'Documentation & Compliance',
+        's4_body'        => 'Export documentation handled professionally in accordance with Indonesian regulations.',
+        's5_title'       => 'Transaction Structure',
+        's5_body'        => 'Negotiable structures tailored to buyer volume and market destination.',
+        's6_title'       => 'Communication',
+        's6_body'        => 'Prompt coordination through dedicated trade representatives.',
+        's7_title'       => 'Governing Principles',
+        's7_body'        => 'International commercial trade standards and mutually agreed contracts.',
+        's8_title'       => 'Inquiries',
+        's8_body'        => 'Contact our commercial team for customized sourcing and shipment proposals.',
     ],
 ];

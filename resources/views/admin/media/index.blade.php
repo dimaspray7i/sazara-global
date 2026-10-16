@@ -55,7 +55,7 @@
                     </label>
                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                         <input type="checkbox" name="is_gallery" value="1">
-                        <span class="adm-label" style="margin: 0; color: var(--adm-primary, #3C8C2B); font-weight: 600;">Display in Public Gallery</span>
+                        <span class="adm-label" style="margin: 0; color: var(--adm-primary, #3C8C2B); font-weight: 600;">Publish to Gallery (Default: Draft)</span>
                     </label>
                 </div>
             </div>
@@ -103,8 +103,8 @@
                                 <form method="POST" action="{{ route('admin.media.toggle', $m) }}" style="display:inline;">
                                     @csrf
                                     <input type="hidden" name="field" value="is_gallery">
-                                    <button type="submit" class="adm-badge {{ $m->is_gallery ? 'adm-badge-success' : 'adm-badge-muted' }}" style="cursor: pointer; border: none; font-size: 10px; padding: 2px 7px;" title="Click to toggle Public Gallery inclusion">
-                                        {{ $m->is_gallery ? '★ In Gallery' : 'Not in Gallery' }}
+                                    <button type="submit" class="adm-badge {{ $m->is_gallery ? 'adm-badge-success' : 'adm-badge-muted' }}" style="cursor: pointer; border: none; font-size: 10px; padding: 3px 8px; font-weight:600;" title="Click to toggle Gallery publication: Published vs Draft">
+                                        {{ $m->is_gallery ? 'Gallery: Published' : 'Gallery: Draft' }}
                                     </button>
                                 </form>
                             </div>
@@ -156,7 +156,7 @@
                                     </label>
                                     <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
                                         <input type="checkbox" name="is_gallery" value="1" {{ $m->is_gallery ? 'checked' : '' }}>
-                                        <span style="color: var(--adm-primary, #3C8C2B); font-weight: 600;">Show in Public Gallery</span>
+                                        <span style="color: var(--adm-primary, #3C8C2B); font-weight: 600;">Gallery Status: Published</span>
                                     </label>
                                 </div>
                                 <button type="submit" class="adm-btn adm-btn-primary adm-btn-sm" style="font-size: 11px; padding: 4px 8px; width: 100%;">Save Changes</button>

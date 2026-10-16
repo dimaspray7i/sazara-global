@@ -13,7 +13,17 @@ class PublicGalleryController extends Controller
         $category = $request->query('category');
 
         // Only show media explicitly marked as gallery items (is_gallery=true AND is_public=true)
-        $query = Media::gallery()->orderBy('sort_order', 'asc')->latest('id');
+        // Deduplicate: If multiple rows share the same file_hash or path, pick the highest ID
+        $query = Media::gallery()
+            ->whereIn('id', function ($sub) {
+                $sub->selectRaw('MAX(id)')
+                    ->from('media')
+                    ->where('is_gallery', true)
+                    ->where('is_public', true)
+                    ->groupByRaw("COALESCE(NULLIF(file_hash, ''), path)");
+            })
+            ->orderBy('sort_order', 'asc')
+            ->latest('id');
 
         if (filled($category) && $category !== 'all') {
             $query->where('category', $category);

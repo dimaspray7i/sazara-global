@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'nav' => ['home' => 'Beranda', 'product' => 'Produk', 'article' => 'Artikel', 'about' => 'Tentang Kami', 'contact' => 'Hubungi Kami', 'gallery' => 'Galeri'],
+    'nav' => ['home' => 'Beranda', 'product' => 'Produk', 'article' => 'Artikel', 'about' => 'Tentang Kami', 'contact' => 'Hubungi Kami', 'gallery' => 'Galeri', 'terms' => 'Syarat & Ketentuan'],
     'common' => [
         'view_products' => 'Lihat Produk', 'get_offer' => 'Dapatkan Penawaran', 'learn_more' => 'Pelajari Lebih Lanjut',
         'read_more' => 'Baca Selengkapnya', 'chat_wa' => 'Chat via WhatsApp', 'back_products' => 'Kembali ke Produk',
@@ -58,6 +58,9 @@ return [
         'packaging' => 'Sortasi & Pengemasan',
         'export' => 'Ekspor & Loading',
         'company' => 'Aktivitas Perusahaan',
+        'commodities' => 'Komoditas',
+        'insights' => 'Operasional',
+        'system' => 'Sistem',
         'empty' => 'Belum ada dokumentasi aktivitas pada kategori ini.',
         'lightbox_close' => 'Tutup',
         'prev' => 'Sebelumnya',
@@ -154,5 +157,25 @@ return [
         'lc_name'        => 'Letter of Credit',
         'lc_desc'        => 'Letter of Credit komersial yang diterbitkan oleh bank internasional terkemuka.',
         'back'           => 'Kembali ke Beranda',
+        // Backward compatibility for any cached or legacy references
+        'effective'      => 'Kesepakatan Komersial',
+        'effective_date' => 'Sesuai kontrak',
+        'intro'          => 'Ketentuan perdagangan internasional dan opsi pembayaran fleksibel yang disediakan oleh PT Sazara Global Trade.',
+        's1_title'       => 'Incoterms (FOB, CFR, CIF)',
+        's1_body'        => 'Kondisi pengiriman standar yang dapat disesuaikan dengan destinasi dan spesifikasi pembeli.',
+        's2_title'       => 'Syarat Pembayaran (T/T, L/C)',
+        's2_body'        => 'Pilihan transfer kawat elektronik dan letter of credit dokumenter.',
+        's3_title'       => 'Kualitas & Spesifikasi',
+        's3_body'        => 'Komitmen terhadap standar produk yang disepakati dan inspeksi transparan.',
+        's4_title'       => 'Dokumentasi & Kepatuhan',
+        's4_body'        => 'Dokumentasi ekspor ditangani secara profesional sesuai regulasi Indonesia.',
+        's5_title'       => 'Struktur Transaksi',
+        's5_body'        => 'Struktur yang dapat dinegosiasikan sesuai volume pesanan dan pasar tujuan.',
+        's6_title'       => 'Komunikasi',
+        's6_body'        => 'Koordinasi responsif melalui representasi perdagangan resmi.',
+        's7_title'       => 'Prinsip Dasar',
+        's7_body'        => 'Standar perdagangan komersial internasional dan kontrak bersama.',
+        's8_title'       => 'Pertanyaan & Konsultasi',
+        's8_body'        => 'Hubungi tim komersial kami untuk penawaran pengadaan dan pengapalan komoditas.',
     ],
 ];
